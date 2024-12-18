@@ -15,7 +15,8 @@ const reactJsDocPlugin = () => {
           name: '',
           props: new Set(),
           hasSpreadProps: false,
-          hasExistingJsDoc: false
+          hasExistingJsDoc: false,
+          nodePath: null  // save component path
         };
 
         // Check for existing JSDoc
@@ -33,6 +34,7 @@ const reactJsDocPlugin = () => {
           FunctionDeclaration(path) {
             if (!componentInfo.name && isReactComponent(path.node)) {
               componentInfo.name = path.node.id.name;
+              componentInfo.nodePath = path;  // save path
               if (!checkForExistingJsDoc(path.node.leadingComments)) {
                 analyzeComponent(path, componentInfo);
               }
@@ -44,6 +46,7 @@ const reactJsDocPlugin = () => {
               const init = path.node.init;
               if (init && isReactComponent(init)) {
                 componentInfo.name = path.node.id.name;
+                componentInfo.nodePath = path;  // save path
                 if (!checkForExistingJsDoc(path.node.leadingComments)) {
                   analyzeComponent(path.get('init'), componentInfo);
                 }
@@ -52,7 +55,7 @@ const reactJsDocPlugin = () => {
           }
         });
 
-        if (componentInfo.name && componentInfo.props.size > 0) {
+        if (componentInfo.name && componentInfo.props.size > 0 && componentInfo.nodePath) {
           const jsDoc = generateJsDoc(
             componentInfo.name, 
             Array.from(componentInfo.props), 
@@ -61,12 +64,18 @@ const reactJsDocPlugin = () => {
           
           propsCache.set(state.filename, componentInfo);
           
-          // Add JSDoc comment to the component
-          path.node.comments = path.node.comments || [];
-          path.node.comments.unshift({
+          // Add JSDoc comment directly to the component node
+          const comment = {
             type: 'CommentBlock',
-            value: jsDoc
-          });
+            value: jsDoc,
+            leading: true,
+            trailing: false
+          };
+
+          // Add JSDoc to component node
+          const targetNode = componentInfo.nodePath.node;
+          targetNode.leadingComments = targetNode.leadingComments || [];
+          targetNode.leadingComments.unshift(comment);
         }
       }
     }
@@ -188,7 +197,9 @@ async function generateDocs(directory) {
           parserOpts: {
             plugins: ['jsx'],
             sourceType: 'module'
-          }
+          },
+          retainLines: true,
+          comments: true
         });
 
         if (result && propsCache.has(file)) {
