@@ -3,55 +3,60 @@ const path = require('path');
 const glob = require('glob');
 const babel = require('@babel/core');
 const generator = require('@babel/generator').default;
+const parser = require('@babel/parser');
 
 const propsCache = new Map();
 
-// Babel plugin to analyze React components
 const reactJsDocPlugin = () => {
   return {
     visitor: {
       Program(path, state) {
-        let componentName = '';
-        let props = new Set();
-        let hasSpreadProps = false;
-        let hasExistingJsDoc = false;
+        let componentInfo = {
+          name: '',
+          props: new Set(),
+          hasSpreadProps: false,
+          hasExistingJsDoc: false
+        };
 
         // Check for existing JSDoc
         path.node.comments?.forEach(comment => {
           if (comment.type === 'CommentBlock' && comment.value.includes('@component')) {
-            hasExistingJsDoc = true;
+            componentInfo.hasExistingJsDoc = true;
           }
         });
 
-        if (hasExistingJsDoc) {
-          return;
-        }
+        if (componentInfo.hasExistingJsDoc) return;
 
         // Visit component declarations
         path.traverse({
+          // 函數聲明組件
           FunctionDeclaration(path) {
             if (isReactComponent(path.node)) {
-              componentName = path.node.id.name;
-              analyzeFunctionComponent(path, props, hasSpreadProps);
+              componentInfo.name = path.node.id.name;
+              analyzeComponent(path, componentInfo);
             }
           },
-          ArrowFunctionExpression(path) {
-            if (isReactComponent(path.parentPath)) {
-              componentName = path.parentPath.node.id.name;
-              analyzeFunctionComponent(path, props, hasSpreadProps);
+          // 箭頭函數和函數表達式組件
+          VariableDeclarator(path) {
+            const init = path.node.init;
+            if (init && (init.type === 'ArrowFunctionExpression' || init.type === 'FunctionExpression')) {
+              if (isReactComponent(init)) {
+                componentInfo.name = path.node.id.name;
+                analyzeComponent(path.get('init'), componentInfo);
+              }
             }
           }
         });
 
-        if (componentName && !hasExistingJsDoc) {
-          const jsDoc = generateJsDoc(componentName, Array.from(props), hasSpreadProps);
-          propsCache.set(state.filename, {
-            componentName,
-            props: Array.from(props),
-            hasSpreadProps
-          });
+        if (componentInfo.name && !componentInfo.hasExistingJsDoc) {
+          const jsDoc = generateJsDoc(
+            componentInfo.name, 
+            Array.from(componentInfo.props), 
+            componentInfo.hasSpreadProps
+          );
           
-          // Add JSDoc to component
+          propsCache.set(state.filename, componentInfo);
+          
           path.node.comments = path.node.comments || [];
           path.node.comments.unshift({
             type: 'CommentBlock',
@@ -64,46 +69,74 @@ const reactJsDocPlugin = () => {
 };
 
 function isReactComponent(node) {
-  return node.returnType?.typeAnnotation?.type === 'JSXElement' ||
-         node.body?.type === 'JSXElement';
+  if (!node) return false;
+  
+  // 直接返回 JSX 的情況
+  if (node.body?.type === 'JSXElement' || node.body?.type === 'JSXFragment') {
+    return true;
+  }
+
+  // 在函數體內返回 JSX 的情況
+  if (node.body?.type === 'BlockStatement') {
+    let hasJsxReturn = false;
+    babel.traverse(node.body, {
+      ReturnStatement(path) {
+        const returnType = path.node.argument?.type;
+        if (returnType === 'JSXElement' || returnType === 'JSXFragment') {
+          hasJsxReturn = true;
+        }
+      }
+    }, { node: node.body });
+    return hasJsxReturn;
+  }
+
+  return false;
 }
 
-function analyzeFunctionComponent(path, props, hasSpreadProps) {
+function analyzeComponent(path, componentInfo) {
   path.traverse({
+    // 解構 props
     ObjectPattern(path) {
-      if (path.parentPath.node.params?.[0]?.name === 'props') {
+      const parent = path.parentPath.node;
+      if (parent.type === 'ArrowFunctionExpression' || 
+          parent.type === 'FunctionExpression' ||
+          parent.type === 'FunctionDeclaration') {
         path.node.properties.forEach(prop => {
           if (prop.type === 'ObjectProperty') {
-            props.add(prop.key.name);
+            componentInfo.props.add(prop.key.name);
+          } else if (prop.type === 'RestElement') {
+            componentInfo.hasSpreadProps = true;
           }
         });
       }
     },
+    // props.xxx 使用方式
     MemberExpression(path) {
       if (path.node.object.name === 'props') {
-        props.add(path.node.property.name);
+        componentInfo.props.add(path.node.property.name);
       }
     },
+    // spread props
     SpreadElement(path) {
       if (path.node.argument.name === 'props') {
-        hasSpreadProps = true;
+        componentInfo.hasSpreadProps = true;
       }
     }
   });
 }
 
 function generateJsDoc(componentName, props, hasSpreadProps) {
-  let doc = `*\n * @component ${componentName}\n * @param {Object} props\n`;
+  let doc = `*\n * @component ${componentName}\n * @description React component\n * @param {Object} props Component props\n`;
   
   props.forEach(prop => {
-    doc += ` * @param {any} props.${prop}\n`;
+    doc += ` * @param {*} props.${prop} - ${prop} prop\n`;
   });
 
   if (hasSpreadProps) {
-    doc += ` * @param {...any} props.spread Additional props are spread\n`;
+    doc += ` * @param {...*} props.spread - Additional props are spread\n`;
   }
 
-  doc += ` * @returns {JSX.Element}\n`;
+  doc += ` * @returns {JSX.Element} React component\n`;
   
   return doc;
 }
@@ -119,7 +152,8 @@ async function generateDocs(directory) {
         filename: file,
         plugins: [reactJsDocPlugin],
         parserOpts: {
-          plugins: ['jsx']
+          plugins: ['jsx'],
+          sourceType: 'module'
         }
       });
 
