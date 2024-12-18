@@ -222,7 +222,7 @@ function analyzeComponent(path, componentInfo) {
 
 function generateJsDoc(componentName, props, hasSpreadProps) {
   // Add initial newline for better formatting
-  let doc = `*\n\n * @component ${componentName}\n * @description React component\n * @param {Object} props Component props\n`;
+  let doc = `\n\n*\n * @component ${componentName}\n * @description React component\n * @param {Object} props Component props\n`;
   
   props.forEach(prop => {
     doc += ` * @param {*} props.${prop} - ${prop} prop\n`;
@@ -232,7 +232,7 @@ function generateJsDoc(componentName, props, hasSpreadProps) {
     doc += ` * @param {...*} props.spread - Additional props are spread\n`;
   }
 
-  doc += ` * @returns {JSX.Element} React component\n *\n`;  // Add extra newline at the end
+  doc += ` * @returns {JSX.Element} React component\n *\n\n`;  // Add extra newline at the end
   
   return doc;
 }
