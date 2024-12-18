@@ -31,7 +31,7 @@ const reactJsDocPlugin = () => {
 
         // Analyze components
         path.traverse({
-          // Function declarations
+          // Function declarations (including export default function)
           FunctionDeclaration(path) {
             if (!componentInfo.name && isReactComponent(path.node)) {
               componentInfo.name = path.node.id.name;
@@ -44,15 +44,32 @@ const reactJsDocPlugin = () => {
           // Arrow functions and function expressions
           VariableDeclaration(path) {
             const declaration = path.node.declarations[0];
-            if (declaration && declaration.init && 
-                (declaration.init.type === 'ArrowFunctionExpression' || 
-                 declaration.init.type === 'FunctionExpression')) {
-              if (isReactComponent(declaration.init)) {
+            if (declaration && declaration.init) {
+              let init = declaration.init;
+              
+              // Handle wrapped components (memo, forwardRef)
+              if (init.type === 'CallExpression' && 
+                  (init.callee.name === 'memo' || init.callee.name === 'forwardRef')) {
+                init = init.arguments[0];
+              }
+
+              if (isReactComponent(init)) {
                 componentInfo.name = declaration.id.name;
                 componentInfo.nodePath = path;
                 if (!checkForExistingJsDoc(path.node.leadingComments)) {
                   analyzeComponent(path, componentInfo);
                 }
+              }
+            }
+          },
+          // Export default function
+          ExportDefaultDeclaration(path) {
+            const declaration = path.node.declaration;
+            if (declaration.type === 'FunctionDeclaration' && isReactComponent(declaration)) {
+              componentInfo.name = declaration.id?.name || 'AnonymousComponent';
+              componentInfo.nodePath = path;
+              if (!checkForExistingJsDoc(path.node.leadingComments)) {
+                analyzeComponent(path, componentInfo);
               }
             }
           }
@@ -67,27 +84,42 @@ const reactJsDocPlugin = () => {
             componentInfo.hasSpreadProps
           );
           
-          // Create JSDoc comment
+          // Create JSDoc comment with proper spacing
           const comment = {
             type: 'CommentBlock',
             value: jsDoc,
             leading: true,
-            trailing: false
+            trailing: false,
+            loc: {
+              start: {
+                line: componentInfo.nodePath.node.loc.start.line - 1
+              }
+            }
           };
 
-          // Add JSDoc to the component node
+          // Add JSDoc to the component node with proper spacing
           const targetNode = componentInfo.nodePath.node;
           if (!targetNode.leadingComments) {
             targetNode.leadingComments = [];
           }
+
+          // Add extra newline before JSDoc
+          const extraNewline = {
+            type: 'CommentLine',
+            value: '',
+            leading: true,
+            trailing: false
+          };
+
           targetNode.leadingComments.unshift(comment);
+          targetNode.leadingComments.unshift(extraNewline);
 
           // Store the modified component info
           propsCache.set(filename, {
             componentName: componentInfo.name,
             props: Array.from(componentInfo.props),
             hasSpreadProps: componentInfo.hasSpreadProps,
-            modified: true  // Flag to indicate modification
+            modified: true
           });
 
           console.log('Added JSDoc to:', componentInfo.name);
@@ -108,6 +140,20 @@ function isReactComponent(node) {
            type === 'JSXFragment';
   };
 
+  // Check if it's wrapped in memo or other HOCs
+  const isWrappedComponent = (node) => {
+    if (node.type === 'CallExpression') {
+      const callee = node.callee;
+      // Check for memo(Component) pattern
+      if (callee.type === 'Identifier' && 
+          (callee.name === 'memo' || callee.name === 'forwardRef')) {
+        const args = node.arguments;
+        return args.length > 0 && isReactComponent(args[0]);
+      }
+    }
+    return false;
+  };
+
   // For arrow functions and function expressions
   if (node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression') {
     // Direct JSX return
@@ -119,7 +165,7 @@ function isReactComponent(node) {
       return node.body.body.some(statement => 
         statement.type === 'ReturnStatement' && 
         statement.argument && 
-        isJSX(statement.argument.type)
+        (isJSX(statement.argument.type) || isWrappedComponent(statement.argument))
       );
     }
   }
@@ -129,11 +175,14 @@ function isReactComponent(node) {
     return node.body.body.some(statement => 
       statement.type === 'ReturnStatement' && 
       statement.argument && 
-      isJSX(statement.argument.type)
+      (isJSX(statement.argument.type) || isWrappedComponent(statement.argument))
     );
   }
 
-  console.log('Checking component:', node.type);
+  // For wrapped components (memo, forwardRef, etc.)
+  if (isWrappedComponent(node)) {
+    return true;
+  }
 
   return false;
 }
@@ -172,7 +221,8 @@ function analyzeComponent(path, componentInfo) {
 }
 
 function generateJsDoc(componentName, props, hasSpreadProps) {
-  let doc = `\n*\n * @component ${componentName}\n * @description React component\n * @param {Object} props Component props\n`;
+  // Add initial newline for better formatting
+  let doc = `*\n\n * @component ${componentName}\n * @description React component\n * @param {Object} props Component props\n`;
   
   props.forEach(prop => {
     doc += ` * @param {*} props.${prop} - ${prop} prop\n`;
@@ -182,7 +232,7 @@ function generateJsDoc(componentName, props, hasSpreadProps) {
     doc += ` * @param {...*} props.spread - Additional props are spread\n`;
   }
 
-  doc += ` * @returns {JSX.Element} React component\n`;
+  doc += ` * @returns {JSX.Element} React component\n *\n`;  // Add extra newline at the end
   
   return doc;
 }
