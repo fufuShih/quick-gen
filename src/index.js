@@ -18,32 +18,33 @@ const reactJsDocPlugin = () => {
           hasExistingJsDoc: false
         };
 
-        // 改進檢測邏輯
+        // Check for existing JSDoc
         const checkForExistingJsDoc = (comments) => {
-          return comments?.some(comment => 
+          if (!comments) return false;
+          return comments.some(comment => 
             comment.type === 'CommentBlock' && 
             comment.value.includes('@component')
-          ) || false;
+          );
         };
 
-        // 分析組件
+        // Analyze components
         path.traverse({
+          // Function declarations
           FunctionDeclaration(path) {
-            if (isReactComponent(path.node)) {
+            if (!componentInfo.name && isReactComponent(path.node)) {
               componentInfo.name = path.node.id.name;
-              componentInfo.hasExistingJsDoc = checkForExistingJsDoc(path.node.leadingComments);
-              if (!componentInfo.hasExistingJsDoc) {
+              if (!checkForExistingJsDoc(path.node.leadingComments)) {
                 analyzeComponent(path, componentInfo);
               }
             }
           },
+          // Arrow functions and function expressions
           VariableDeclarator(path) {
-            const init = path.node.init;
-            if (init && (init.type === 'ArrowFunctionExpression' || init.type === 'FunctionExpression')) {
-              if (isReactComponent(init)) {
+            if (!componentInfo.name) {
+              const init = path.node.init;
+              if (init && isReactComponent(init)) {
                 componentInfo.name = path.node.id.name;
-                componentInfo.hasExistingJsDoc = checkForExistingJsDoc(path.node.leadingComments);
-                if (!componentInfo.hasExistingJsDoc) {
+                if (!checkForExistingJsDoc(path.node.leadingComments)) {
                   analyzeComponent(path.get('init'), componentInfo);
                 }
               }
@@ -51,7 +52,7 @@ const reactJsDocPlugin = () => {
           }
         });
 
-        if (componentInfo.name && !componentInfo.hasExistingJsDoc) {
+        if (componentInfo.name && componentInfo.props.size > 0) {
           const jsDoc = generateJsDoc(
             componentInfo.name, 
             Array.from(componentInfo.props), 
@@ -59,6 +60,8 @@ const reactJsDocPlugin = () => {
           );
           
           propsCache.set(state.filename, componentInfo);
+          
+          // Add JSDoc comment to the component
           path.node.comments = path.node.comments || [];
           path.node.comments.unshift({
             type: 'CommentBlock',
@@ -73,49 +76,61 @@ const reactJsDocPlugin = () => {
 function isReactComponent(node) {
   if (!node) return false;
   
-  // 改進 JSX 檢測
+  // Improved JSX detection
   const isJSX = (type) => {
     return type === 'JSXElement' || 
            type === 'JSXFragment' || 
-           type === 'JSXText';
+           type === 'JSXText' ||
+           type === 'JSXFragment';
   };
 
-  // 直接返回 JSX
-  if (isJSX(node.body?.type)) {
-    return true;
+  // For arrow functions and function expressions
+  if (node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression') {
+    // Direct JSX return
+    if (isJSX(node.body?.type)) {
+      return true;
+    }
+    // Block with return statement
+    if (node.body?.type === 'BlockStatement') {
+      return node.body.body.some(statement => 
+        statement.type === 'ReturnStatement' && 
+        statement.argument && 
+        isJSX(statement.argument.type)
+      );
+    }
   }
 
-  // 在函數體內返回 JSX
-  if (node.body?.type === 'BlockStatement') {
-    let hasJsxReturn = false;
-    node.body.body.forEach(statement => {
-      if (statement.type === 'ReturnStatement' && 
-          isJSX(statement.argument?.type)) {
-        hasJsxReturn = true;
-      }
-    });
-    return hasJsxReturn;
+  // For function declarations
+  if (node.type === 'FunctionDeclaration') {
+    return node.body.body.some(statement => 
+      statement.type === 'ReturnStatement' && 
+      statement.argument && 
+      isJSX(statement.argument.type)
+    );
   }
+
+  console.log('Checking component:', node.type);
 
   return false;
 }
 
 function analyzeComponent(path, componentInfo) {
+  // Analyze props from parameters
+  if (path.node.params && path.node.params[0]) {
+    const firstParam = path.node.params[0];
+    if (firstParam.type === 'ObjectPattern') {
+      firstParam.properties.forEach(prop => {
+        if (prop.type === 'ObjectProperty') {
+          componentInfo.props.add(prop.key.name);
+        } else if (prop.type === 'RestElement') {
+          componentInfo.hasSpreadProps = true;
+        }
+      });
+    }
+  }
+
+  // Analyze props usage in the component body
   path.traverse({
-    ObjectPattern(path) {
-      const parent = path.parentPath.node;
-      if (parent.type === 'ArrowFunctionExpression' || 
-          parent.type === 'FunctionExpression' ||
-          parent.type === 'FunctionDeclaration') {
-        path.node.properties.forEach(prop => {
-          if (prop.type === 'ObjectProperty') {
-            componentInfo.props.add(prop.key.name);
-          } else if (prop.type === 'RestElement') {
-            componentInfo.hasSpreadProps = true;
-          }
-        });
-      }
-    },
     MemberExpression(path) {
       if (path.node.object.name === 'props') {
         componentInfo.props.add(path.node.property.name);
@@ -127,6 +142,9 @@ function analyzeComponent(path, componentInfo) {
       }
     }
   });
+
+  console.log('Analyzing component:', componentInfo.name);
+  console.log('Found props:', Array.from(componentInfo.props));
 }
 
 function generateJsDoc(componentName, props, hasSpreadProps) {
