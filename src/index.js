@@ -18,25 +18,40 @@ const reactJsDocPlugin = () => {
           hasExistingJsDoc: false
         };
 
-        // Check for existing JSDoc
-        path.node.comments?.forEach(comment => {
-          if (comment.type === 'CommentBlock' && comment.value.includes('@component')) {
-            componentInfo.hasExistingJsDoc = true;
+        // 檢查是否已有 JSDoc
+        path.traverse({
+          FunctionDeclaration(path) {
+            const comments = path.node.leadingComments || [];
+            if (comments.some(comment => 
+              comment.type === 'CommentBlock' && 
+              (comment.value.includes('@component') || comment.value.includes('* @param'))
+            )) {
+              componentInfo.hasExistingJsDoc = true;
+            }
+          },
+          VariableDeclarator(path) {
+            const comments = path.node.leadingComments || [];
+            if (comments.some(comment => 
+              comment.type === 'CommentBlock' && 
+              (comment.value.includes('@component') || comment.value.includes('* @param'))
+            )) {
+              componentInfo.hasExistingJsDoc = true;
+            }
           }
         });
 
-        if (componentInfo.hasExistingJsDoc) return;
+        if (componentInfo.hasExistingJsDoc) {
+          return;
+        }
 
-        // Visit component declarations
+        // 分析組件
         path.traverse({
-          // 函數聲明組件
           FunctionDeclaration(path) {
             if (isReactComponent(path.node)) {
               componentInfo.name = path.node.id.name;
               analyzeComponent(path, componentInfo);
             }
           },
-          // 箭頭函數和函數表達式組件
           VariableDeclarator(path) {
             const init = path.node.init;
             if (init && (init.type === 'ArrowFunctionExpression' || init.type === 'FunctionExpression')) {
@@ -71,12 +86,12 @@ const reactJsDocPlugin = () => {
 function isReactComponent(node) {
   if (!node) return false;
   
-  // 直接返回 JSX 的情況
+  // 檢查直接返回 JSX
   if (node.body?.type === 'JSXElement' || node.body?.type === 'JSXFragment') {
     return true;
   }
 
-  // 在函數體內返回 JSX 的情況
+  // 檢查函數體中的 return JSX
   if (node.body?.type === 'BlockStatement') {
     let hasJsxReturn = false;
     babel.traverse(node.body, {
@@ -95,7 +110,6 @@ function isReactComponent(node) {
 
 function analyzeComponent(path, componentInfo) {
   path.traverse({
-    // 解構 props
     ObjectPattern(path) {
       const parent = path.parentPath.node;
       if (parent.type === 'ArrowFunctionExpression' || 
@@ -110,13 +124,11 @@ function analyzeComponent(path, componentInfo) {
         });
       }
     },
-    // props.xxx 使用方式
     MemberExpression(path) {
       if (path.node.object.name === 'props') {
         componentInfo.props.add(path.node.property.name);
       }
     },
-    // spread props
     SpreadElement(path) {
       if (path.node.argument.name === 'props') {
         componentInfo.hasSpreadProps = true;
@@ -142,28 +154,50 @@ function generateJsDoc(componentName, props, hasSpreadProps) {
 }
 
 async function generateDocs(directory) {
-  const files = glob.sync(path.join(directory, '**/*.{js,jsx}'));
-
-  for (const file of files) {
-    const code = fs.readFileSync(file, 'utf-8');
+  try {
+    console.log('🔍 Scanning directory:', directory);
+    const files = glob.sync(path.join(directory, '**/*.{js,jsx}'));
     
-    try {
-      const result = await babel.transformAsync(code, {
-        filename: file,
-        plugins: [reactJsDocPlugin],
-        parserOpts: {
-          plugins: ['jsx'],
-          sourceType: 'module'
-        }
-      });
-
-      if (result && propsCache.has(file)) {
-        fs.writeFileSync(file, result.code);
-        console.log(`✅ Generated JSDoc for ${propsCache.get(file).componentName} in ${file}`);
-      }
-    } catch (error) {
-      console.error(`❌ Error processing ${file}:`, error);
+    if (files.length === 0) {
+      console.log('⚠️ No JavaScript/React files found in directory');
+      return;
     }
+
+    console.log(`📝 Found ${files.length} files to process...`);
+    
+    let processedCount = 0;
+    for (const file of files) {
+      const code = fs.readFileSync(file, 'utf-8');
+      
+      try {
+        const result = await babel.transformAsync(code, {
+          filename: file,
+          plugins: [reactJsDocPlugin],
+          parserOpts: {
+            plugins: ['jsx'],
+            sourceType: 'module'
+          }
+        });
+
+        if (result && propsCache.has(file)) {
+          fs.writeFileSync(file, result.code);
+          console.log(`✅ Generated JSDoc for ${propsCache.get(file).componentName} in ${file}`);
+          processedCount++;
+        }
+      } catch (error) {
+        console.error(`❌ Error processing ${file}:`, error.message);
+      }
+    }
+
+    if (processedCount === 0) {
+      console.log('ℹ️ No new JSDoc comments were needed');
+    } else {
+      console.log(`\n📊 Summary: Updated ${processedCount} files`);
+    }
+
+  } catch (error) {
+    console.error('❌ Error during generation:', error);
+    throw error;
   }
 }
 
