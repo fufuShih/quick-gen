@@ -18,38 +18,23 @@ const reactJsDocPlugin = () => {
           hasExistingJsDoc: false
         };
 
-        // 檢查是否已有 JSDoc
-        path.traverse({
-          FunctionDeclaration(path) {
-            const comments = path.node.leadingComments || [];
-            if (comments.some(comment => 
-              comment.type === 'CommentBlock' && 
-              (comment.value.includes('@component') || comment.value.includes('* @param'))
-            )) {
-              componentInfo.hasExistingJsDoc = true;
-            }
-          },
-          VariableDeclarator(path) {
-            const comments = path.node.leadingComments || [];
-            if (comments.some(comment => 
-              comment.type === 'CommentBlock' && 
-              (comment.value.includes('@component') || comment.value.includes('* @param'))
-            )) {
-              componentInfo.hasExistingJsDoc = true;
-            }
-          }
-        });
-
-        if (componentInfo.hasExistingJsDoc) {
-          return;
-        }
+        // 改進檢測邏輯
+        const checkForExistingJsDoc = (comments) => {
+          return comments?.some(comment => 
+            comment.type === 'CommentBlock' && 
+            comment.value.includes('@component')
+          ) || false;
+        };
 
         // 分析組件
         path.traverse({
           FunctionDeclaration(path) {
             if (isReactComponent(path.node)) {
               componentInfo.name = path.node.id.name;
-              analyzeComponent(path, componentInfo);
+              componentInfo.hasExistingJsDoc = checkForExistingJsDoc(path.node.leadingComments);
+              if (!componentInfo.hasExistingJsDoc) {
+                analyzeComponent(path, componentInfo);
+              }
             }
           },
           VariableDeclarator(path) {
@@ -57,7 +42,10 @@ const reactJsDocPlugin = () => {
             if (init && (init.type === 'ArrowFunctionExpression' || init.type === 'FunctionExpression')) {
               if (isReactComponent(init)) {
                 componentInfo.name = path.node.id.name;
-                analyzeComponent(path.get('init'), componentInfo);
+                componentInfo.hasExistingJsDoc = checkForExistingJsDoc(path.node.leadingComments);
+                if (!componentInfo.hasExistingJsDoc) {
+                  analyzeComponent(path.get('init'), componentInfo);
+                }
               }
             }
           }
@@ -71,7 +59,6 @@ const reactJsDocPlugin = () => {
           );
           
           propsCache.set(state.filename, componentInfo);
-          
           path.node.comments = path.node.comments || [];
           path.node.comments.unshift({
             type: 'CommentBlock',
@@ -86,22 +73,27 @@ const reactJsDocPlugin = () => {
 function isReactComponent(node) {
   if (!node) return false;
   
-  // 檢查直接返回 JSX
-  if (node.body?.type === 'JSXElement' || node.body?.type === 'JSXFragment') {
+  // 改進 JSX 檢測
+  const isJSX = (type) => {
+    return type === 'JSXElement' || 
+           type === 'JSXFragment' || 
+           type === 'JSXText';
+  };
+
+  // 直接返回 JSX
+  if (isJSX(node.body?.type)) {
     return true;
   }
 
-  // 檢查函數體中的 return JSX
+  // 在函數體內返回 JSX
   if (node.body?.type === 'BlockStatement') {
     let hasJsxReturn = false;
-    babel.traverse(node.body, {
-      ReturnStatement(path) {
-        const returnType = path.node.argument?.type;
-        if (returnType === 'JSXElement' || returnType === 'JSXFragment') {
-          hasJsxReturn = true;
-        }
+    node.body.body.forEach(statement => {
+      if (statement.type === 'ReturnStatement' && 
+          isJSX(statement.argument?.type)) {
+        hasJsxReturn = true;
       }
-    }, { node: node.body });
+    });
     return hasJsxReturn;
   }
 
@@ -166,6 +158,8 @@ async function generateDocs(directory) {
     console.log(`📝 Found ${files.length} files to process...`);
     
     let processedCount = 0;
+    let skippedCount = 0;
+    
     for (const file of files) {
       const code = fs.readFileSync(file, 'utf-8');
       
@@ -183,17 +177,19 @@ async function generateDocs(directory) {
           fs.writeFileSync(file, result.code);
           console.log(`✅ Generated JSDoc for ${propsCache.get(file).componentName} in ${file}`);
           processedCount++;
+        } else {
+          skippedCount++;
         }
       } catch (error) {
         console.error(`❌ Error processing ${file}:`, error.message);
+        skippedCount++;
       }
     }
 
-    if (processedCount === 0) {
-      console.log('ℹ️ No new JSDoc comments were needed');
-    } else {
-      console.log(`\n📊 Summary: Updated ${processedCount} files`);
-    }
+    console.log('\n📊 Summary:');
+    console.log(`Total files found: ${files.length}`);
+    console.log(`Files updated: ${processedCount}`);
+    console.log(`Files skipped: ${skippedCount}`);
 
   } catch (error) {
     console.error('❌ Error during generation:', error);
