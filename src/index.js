@@ -172,7 +172,7 @@ function analyzeComponent(path, componentInfo) {
 }
 
 function generateJsDoc(componentName, props, hasSpreadProps) {
-  let doc = `*\n * @component ${componentName}\n * @description React component\n * @param {Object} props Component props\n`;
+  let doc = `\n*\n * @component ${componentName}\n * @description React component\n * @param {Object} props Component props\n`;
   
   props.forEach(prop => {
     doc += ` * @param {*} props.${prop} - ${prop} prop\n`;
