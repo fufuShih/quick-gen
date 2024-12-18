@@ -11,6 +11,7 @@ const reactJsDocPlugin = () => {
   return {
     visitor: {
       Program(path, state) {
+        const filename = state.filename;
         let componentInfo = {
           name: '',
           props: new Set(),
@@ -66,8 +67,6 @@ const reactJsDocPlugin = () => {
             componentInfo.hasSpreadProps
           );
           
-          propsCache.set(state.filename, componentInfo);
-
           // Create JSDoc comment
           const comment = {
             type: 'CommentBlock',
@@ -82,6 +81,14 @@ const reactJsDocPlugin = () => {
             targetNode.leadingComments = [];
           }
           targetNode.leadingComments.unshift(comment);
+
+          // Store the modified component info
+          propsCache.set(filename, {
+            componentName: componentInfo.name,
+            props: Array.from(componentInfo.props),
+            hasSpreadProps: componentInfo.hasSpreadProps,
+            modified: true  // Flag to indicate modification
+          });
 
           console.log('Added JSDoc to:', componentInfo.name);
         }
@@ -196,11 +203,12 @@ async function generateDocs(directory) {
     let skippedCount = 0;
     
     for (const file of files) {
+      const absolutePath = path.resolve(file);
       const code = fs.readFileSync(file, 'utf-8');
       
       try {
         const result = await babel.transformAsync(code, {
-          filename: file,
+          filename: absolutePath,  // Use absolute path
           plugins: [reactJsDocPlugin],
           parserOpts: {
             plugins: ['jsx'],
@@ -214,11 +222,11 @@ async function generateDocs(directory) {
           }
         });
 
-        if (result && propsCache.has(file)) {
-          const info = propsCache.get(file);
-          console.log(`Processing ${info.name} with props:`, Array.from(info.props));
+        const cacheInfo = propsCache.get(absolutePath);
+        if (result && cacheInfo && cacheInfo.modified) {
+          console.log(`Processing ${cacheInfo.componentName} with props:`, cacheInfo.props);
           fs.writeFileSync(file, result.code);
-          console.log(`✅ Generated JSDoc for ${info.componentName} in ${file}`);
+          console.log(`✅ Generated JSDoc for ${cacheInfo.componentName} in ${file}`);
           processedCount++;
         } else {
           console.log(`⚠️ Skipped ${file} - No React component found or already documented`);
