@@ -16,7 +16,7 @@ const reactJsDocPlugin = () => {
           props: new Set(),
           hasSpreadProps: false,
           hasExistingJsDoc: false,
-          nodePath: null  // save component path
+          nodePath: null
         };
 
         // Check for existing JSDoc
@@ -34,21 +34,23 @@ const reactJsDocPlugin = () => {
           FunctionDeclaration(path) {
             if (!componentInfo.name && isReactComponent(path.node)) {
               componentInfo.name = path.node.id.name;
-              componentInfo.nodePath = path;  // save path
+              componentInfo.nodePath = path;
               if (!checkForExistingJsDoc(path.node.leadingComments)) {
                 analyzeComponent(path, componentInfo);
               }
             }
           },
           // Arrow functions and function expressions
-          VariableDeclarator(path) {
-            if (!componentInfo.name) {
-              const init = path.node.init;
-              if (init && isReactComponent(init)) {
-                componentInfo.name = path.node.id.name;
-                componentInfo.nodePath = path;  // save path
+          VariableDeclaration(path) {
+            const declaration = path.node.declarations[0];
+            if (declaration && declaration.init && 
+                (declaration.init.type === 'ArrowFunctionExpression' || 
+                 declaration.init.type === 'FunctionExpression')) {
+              if (isReactComponent(declaration.init)) {
+                componentInfo.name = declaration.id.name;
+                componentInfo.nodePath = path;
                 if (!checkForExistingJsDoc(path.node.leadingComments)) {
-                  analyzeComponent(path.get('init'), componentInfo);
+                  analyzeComponent(path, componentInfo);
                 }
               }
             }
@@ -56,6 +58,8 @@ const reactJsDocPlugin = () => {
         });
 
         if (componentInfo.name && componentInfo.props.size > 0 && componentInfo.nodePath) {
+          console.log('Generating JSDoc for:', componentInfo.name);
+          
           const jsDoc = generateJsDoc(
             componentInfo.name, 
             Array.from(componentInfo.props), 
@@ -63,8 +67,8 @@ const reactJsDocPlugin = () => {
           );
           
           propsCache.set(state.filename, componentInfo);
-          
-          // Add JSDoc comment directly to the component node
+
+          // Create JSDoc comment
           const comment = {
             type: 'CommentBlock',
             value: jsDoc,
@@ -72,10 +76,14 @@ const reactJsDocPlugin = () => {
             trailing: false
           };
 
-          // Add JSDoc to component node
+          // Add JSDoc to the component node
           const targetNode = componentInfo.nodePath.node;
-          targetNode.leadingComments = targetNode.leadingComments || [];
+          if (!targetNode.leadingComments) {
+            targetNode.leadingComments = [];
+          }
           targetNode.leadingComments.unshift(comment);
+
+          console.log('Added JSDoc to:', componentInfo.name);
         }
       }
     }
@@ -199,14 +207,21 @@ async function generateDocs(directory) {
             sourceType: 'module'
           },
           retainLines: true,
-          comments: true
+          comments: true,
+          generatorOpts: {
+            retainLines: true,
+            comments: true
+          }
         });
 
         if (result && propsCache.has(file)) {
+          const info = propsCache.get(file);
+          console.log(`Processing ${info.name} with props:`, Array.from(info.props));
           fs.writeFileSync(file, result.code);
-          console.log(`✅ Generated JSDoc for ${propsCache.get(file).componentName} in ${file}`);
+          console.log(`✅ Generated JSDoc for ${info.componentName} in ${file}`);
           processedCount++;
         } else {
+          console.log(`⚠️ Skipped ${file} - No React component found or already documented`);
           skippedCount++;
         }
       } catch (error) {
