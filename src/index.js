@@ -130,12 +130,34 @@ function analyzeComponent(path, componentInfo) {
   // Analyze props from parameters
   if (path.node.params && path.node.params[0]) {
     const firstParam = path.node.params[0];
+    if (firstParam.type === 'Identifier') {
+      // 尋找解構賦值
+      path.traverse({
+        VariableDeclarator(path) {
+          const init = path.node.init;
+          if (init && init.name === firstParam.name) {
+            const id = path.node.id;
+            if (id.type === 'ObjectPattern') {
+              id.properties.forEach(prop => {
+                if (prop.type === 'ObjectProperty') {
+                  componentInfo.props.add(prop.key.name);
+                } else if (prop.type === 'RestElement') {
+                  componentInfo.hasSpreadProps = true;
+                  componentInfo.props.add('...' + prop.argument.name);
+                }
+              });
+            }
+          }
+        }
+      });
+    }
     if (firstParam.type === 'ObjectPattern') {
       firstParam.properties.forEach(prop => {
         if (prop.type === 'ObjectProperty') {
           componentInfo.props.add(prop.key.name);
         } else if (prop.type === 'RestElement') {
           componentInfo.hasSpreadProps = true;
+          componentInfo.props.add('...' + prop.argument.name);
         }
       });
     }
@@ -166,12 +188,18 @@ function generateJsDoc(componentName, props, hasSpreadProps) {
   doc += ` * @description React component\n`;
   doc += ` * @param {Object} props Component props\n`;
   
-  props.forEach(prop => {
+  const normalProps = props.filter(prop => !prop.startsWith('...'));
+  const spreadProps = props.find(prop => prop.startsWith('...'));
+  
+  normalProps.forEach(prop => {
     doc += ` * @param {*} props.${prop} - ${prop} prop\n`;
   });
 
-  if (hasSpreadProps) {
-    doc += ` * @param {...*} props.spread - Additional props are spread\n`;
+  if (spreadProps) {
+    const restName = spreadProps.slice(3); // 移除 '...' 前綴
+    doc += ` * @param {Object} props.${restName} - Additional props are spread\n`;
+  } else if (hasSpreadProps) {
+    doc += ` * @param {Object} props.rest - Additional props are spread\n`;
   }
 
   doc += ` * @returns {JSX.Element} React component\n`;
