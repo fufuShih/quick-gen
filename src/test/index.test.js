@@ -16,11 +16,12 @@ describe('generateDocs', () => {
       }
     });
 
-    // Create test files if they don't exist
-    if (!fs.existsSync(path.join(fixturesDir, 'Button.jsx'))) {
-      fs.writeFileSync(
-        path.join(fixturesDir, 'Button.jsx'),
-        `const Button = ({ onClick, children, disabled }) => {
+    // Test files mapping
+    const testFiles = {
+      'Button2.jsx': {
+        content: `const Button2 = (props) => {
+  const { onClick, children, disabled } = props;
+
   return (
     <button 
       onClick={onClick}
@@ -31,37 +32,49 @@ describe('generateDocs', () => {
   );
 };
 
-export default Button;`
-      );
-    }
-
-    // Create expected output
-    if (!fs.existsSync(path.join(expectedDir, 'Button.jsx'))) {
-      fs.writeFileSync(
-        path.join(expectedDir, 'Button.jsx'),
-        `/**
- * @component Button
- * @description React component
- * @param {Object} props Component props
- * @param {*} props.onClick - onClick prop
- * @param {*} props.children - children prop
- * @param {*} props.disabled - disabled prop
- * @returns {JSX.Element} React component
- */
-const Button = ({ onClick, children, disabled }) => {
+export default Button2;`
+      },
+      'Button3.jsx': {
+        content: `const Button3 = ({ onClick, children, disabled, ...props }) => {
   return (
     <button 
       onClick={onClick}
       disabled={disabled}
+      {...props}
     >
       {children}
     </button>
   );
 };
 
-export default Button;`
-      );
-    }
+export default Button3;`
+      },
+      'Button4.jsx': {
+        content: `const Button4 = (props) => {
+  const { onClick, children, disabled, ...rest } = props;
+
+  return (
+    <button 
+      onClick={onClick}
+      disabled={disabled}
+      {...rest}
+    >
+      {children}
+    </button>
+  );
+};
+
+export default Button4;`
+      }
+    };
+
+    // Create test files
+    Object.entries(testFiles).forEach(([file, { content }]) => {
+      const componentPath = path.join(fixturesDir, file);
+      if (!fs.existsSync(componentPath)) {
+        fs.writeFileSync(componentPath, content);
+      }
+    });
 
     // Create backup
     const files = fs.readdirSync(fixturesDir);
@@ -85,21 +98,50 @@ export default Button;`
     fs.rmSync(backupDir, { recursive: true });
   });
 
-  test('should generate JSDoc for components', async () => {
-    console.log('Test directory:', fixturesDir);
-    console.log('Files before:', fs.readdirSync(fixturesDir));
-    
-    await generateDocs(fixturesDir);
-    
-    console.log('Files after:', fs.readdirSync(fixturesDir));
-    
-    const files = fs.readdirSync(fixturesDir);
-    files.forEach(file => {
+  const testCases = [
+    {
+      name: 'basic arrow function component',
+      file: 'Button.jsx',
+      description: 'Basic arrow function component with destructured props'
+    },
+    {
+      name: 'arrow function with props object',
+      file: 'Button2.jsx',
+      description: 'Arrow function using props object with destructuring'
+    },
+    {
+      name: 'arrow function with spread props',
+      file: 'Button3.jsx',
+      description: 'Arrow function with spread operator in props'
+    },
+    {
+      name: 'arrow function with rest props',
+      file: 'Button4.jsx',
+      description: 'Arrow function with rest parameter in props'
+    },
+    {
+      name: 'memo component',
+      file: 'MemoButton.jsx',
+      description: 'React memo component'
+    },
+    {
+      name: 'function declaration component',
+      file: 'FunctionButton.jsx',
+      description: 'Function declaration component'
+    }
+  ];
+
+  testCases.forEach(({ name, file, description }) => {
+    test(`should generate JSDoc for ${name} (${description})`, async () => {
+      await generateDocs(fixturesDir);
+      
       const actual = fs.readFileSync(path.join(fixturesDir, file), 'utf-8');
       const expected = fs.readFileSync(path.join(expectedDir, file), 'utf-8');
+      
       // Normalize line endings
       const normalizedActual = actual.replace(/\r\n/g, '\n');
       const normalizedExpected = expected.replace(/\r\n/g, '\n');
+      
       expect(normalizedActual).toBe(normalizedExpected);
     });
   });

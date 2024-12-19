@@ -16,7 +16,8 @@ const reactJsDocPlugin = {
           props: new Set(),
           hasSpreadProps: false,
           lineNumber: path.node.loc.start.line,
-          modified: false
+          modified: true,
+          componentName: path.node.id.name
         };
         analyzeComponent(path, componentInfo);
         if (componentInfo.props.size > 0 || componentInfo.hasSpreadProps) {
@@ -34,14 +35,21 @@ const reactJsDocPlugin = {
     },
     ArrowFunctionExpression(path) {
       const parent = path.parentPath;
-      if (parent.node.type === 'VariableDeclarator') {
+      if (parent.node.type === 'VariableDeclarator' || parent.node.type === 'CallExpression') {
+        let componentName;
+        if (parent.node.type === 'VariableDeclarator') {
+          componentName = parent.node.id.name;
+        } else if (parent.node.type === 'CallExpression' && parent.parentPath.node.type === 'VariableDeclarator') {
+          componentName = parent.parentPath.node.id.name;
+        }
+        
         const componentInfo = {
-          name: parent.node.id.name,
+          name: componentName,
           props: new Set(),
           hasSpreadProps: false,
-          lineNumber: parent.node.loc.start.line,
+          lineNumber: parent.node.type === 'VariableDeclarator' ? parent.node.loc.start.line : parent.parentPath.node.loc.start.line,
           modified: true,
-          componentName: parent.node.id.name
+          componentName
         };
         analyzeComponent(path, componentInfo);
         if (componentInfo.props.size > 0 || componentInfo.hasSpreadProps) {
@@ -154,7 +162,7 @@ function analyzeComponent(path, componentInfo) {
 function generateJsDoc(componentName, props, hasSpreadProps) {
   let doc = '';
   doc += `/**\n`;
-  doc += ` * @component ${componentName}\n`;
+  doc += ` * @component ${componentName.replace(/^_+/, '')}\n`;
   doc += ` * @description React component\n`;
   doc += ` * @param {Object} props Component props\n`;
   
