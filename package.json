@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "bin": {
-    "quick-gen-doc": "./bin/cli.js"
+    "quick-gen-docs": "./bin/cli.js"
   },
   "scripts": {
     "test": "jest",
