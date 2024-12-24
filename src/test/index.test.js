@@ -128,21 +128,33 @@ export default Button4;`
       name: 'function declaration component',
       file: 'FunctionButton.jsx',
       description: 'Function declaration component'
+    },
+    {
+      name: 'component with existing JSDoc',
+      file: 'ButtonWithJSDoc.jsx',
+      description: 'Component that already has JSDoc with @component'
     }
   ];
 
   testCases.forEach(({ name, file, description }) => {
     test(`should generate JSDoc for ${name} (${description})`, async () => {
+      const initialContent = fs.readFileSync(path.join(fixturesDir, file), 'utf-8');
+      
       await generateDocs(fixturesDir);
       
       const actual = fs.readFileSync(path.join(fixturesDir, file), 'utf-8');
       const expected = fs.readFileSync(path.join(expectedDir, file), 'utf-8');
       
-      // Normalize line endings
-      const normalizedActual = actual.replace(/\r\n/g, '\n');
-      const normalizedExpected = expected.replace(/\r\n/g, '\n');
-      
-      expect(normalizedActual).toBe(normalizedExpected);
+      // For components with existing JSDoc, content should remain unchanged
+      if (name === 'component with existing JSDoc') {
+        expect(actual).toBe(initialContent);
+      } else {
+        // Normalize line endings
+        const normalizedActual = actual.replace(/\r\n/g, '\n');
+        const normalizedExpected = expected.replace(/\r\n/g, '\n');
+        
+        expect(normalizedActual).toBe(normalizedExpected);
+      }
     });
   });
 }); 
