@@ -133,6 +133,11 @@ export default Button4;`
       name: 'component with existing JSDoc',
       file: 'ButtonWithJSDoc.jsx',
       description: 'Component that already has JSDoc with @component'
+    },
+    {
+      name: 'multiple components file',
+      file: 'MultipleComponents.jsx',
+      description: 'File with multiple components, some with existing JSDoc'
     }
   ];
 
