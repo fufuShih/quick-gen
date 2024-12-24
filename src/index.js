@@ -208,6 +208,12 @@ function generateJsDoc(componentName, props, hasSpreadProps) {
   return doc;
 }
 
+function hasComponentJSDoc(code) {
+  // Check if there's already a JSDoc comment with @component
+  const jsDocRegex = /\/\*\*[\s\S]*?@component[\s\S]*?\*\//;
+  return jsDocRegex.test(code);
+}
+
 async function generateDocs(directory) {
   try {
     console.log('🔍 Scanning directory:', directory);
@@ -231,6 +237,13 @@ async function generateDocs(directory) {
       const absolutePath = path.resolve(file);
       let code = fs.readFileSync(file, 'utf-8');
       
+      // Skip if component already has JSDoc with @component
+      if (hasComponentJSDoc(code)) {
+        console.log(`⏭️ Skipped ${file} - Already has @component JSDoc`);
+        skippedCount++;
+        continue;
+      }
+
       try {
         const result = await babel.transformAsync(code, {
           filename: absolutePath,
@@ -259,7 +272,7 @@ async function generateDocs(directory) {
           console.log(`✅ Generated JSDoc for ${cacheInfo.componentName} in ${file}`);
           processedCount++;
         } else {
-          console.log(`⚠️ Skipped ${file} - No React component found or already documented`);
+          console.log(`⚠️ Skipped ${file} - No React component found`);
           skippedCount++;
         }
       } catch (error) {
