@@ -103,5 +103,5 @@ const UserProfile = ({ name, age, ...props }) => {
 
 ## 🔗 Links
 
-- [GitHub Repository](https://github.com/fufuShih/quick-gen-docs)
-- [Bug Reports](https://github.com/fufuShih/quick-gen-docs/issues)
+- [GitHub Repository](https://github.com/fufuShih/genkit)
+- [Bug Reports](https://github.com/fufuShih/genkit/issues)

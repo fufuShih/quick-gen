@@ -9,9 +9,10 @@
   "bin": {
     "genkit-react": "./bin/cli.js"
   },
-  "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch"
+  "homepage": "https://github.com/fufuShih/genkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fufuShih/genkit.git"
   },
   "keywords": [
     "react",
@@ -20,6 +21,10 @@
   ],
   "author": "felix Shih",
   "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
   "dependencies": {
     "@babel/core": "^7.23.0",
     "@babel/parser": "^7.23.0",
