@@ -1,8 +1,22 @@
 {
   "name": "genkit-monorepo",
   "private": true,
+  "description": "Code generation tools for modern web development",
   "scripts": {
     "publish-packages": "pnpm publish -r --access public",
-    "test": "pnpm -r test"
-  }
+    "test": "pnpm -r test",
+    "build": "pnpm -r build"
+  },
+  "homepage": "https://github.com/fufuShih/genkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fufuShih/genkit.git"
+  },
+  "keywords": [
+    "generator",
+    "documentation",
+    "development-tools"
+  ],
+  "author": "felix Shih",
+  "license": "MIT"
 } 

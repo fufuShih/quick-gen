@@ -1,77 +1,66 @@
-# Quick Gen Docs Monorepo
+# Genkit Monorepo
 
-This monorepo contains packages related to Quick Gen Docs - a powerful CLI tool that automatically generates comprehensive JSDoc documentation for React components.
+A collection of code generation tools for modern web development.
 
-## 📦 Packages
+## Packages
 
-- [quick-gen-docs](packages/README.md) - Core CLI tool for generating JSDoc documentation
+- [genkit](packages/genkit/README.md) - Main CLI tool for code generation
+- [@genkit/react](packages/react/README.md) - React documentation generator
 
-## 🛠️ Development
+## Installation
 
-### Prerequisites
-
-- Node.js >= 14
-- pnpm >= 8.9.0
-
-### Setup
+You can install the packages separately:
 
 ```bash
+# Install the CLI tool
+npm install -g genkit
+
+# Install the React package
+npm install @genkit/react
+```
+
+## Usage
+
+### Using the CLI tool
+
+```bash
+# Generate React documentation
+genkit react src/components
+
+# Show help
+genkit --help
+```
+
+### Using the React package directly
+
+```javascript
+const { generateDocs } = require('@genkit/react');
+
+generateDocs('src/components');
+```
+
+## Development
+
+This project uses pnpm as its package manager. To get started:
+
+```bash
+# Install pnpm if you haven't already
+npm install -g pnpm
+
 # Install dependencies
 pnpm install
 
-# Build all packages
-pnpm build
-
-# Run tests across all packages
+# Run tests
 pnpm test
-
-# Run development mode
-pnpm dev
 ```
 
-### Workspace Structure
-
-```
-.
-├── packages/
-│   └── quick-gen-docs/     # Core CLI package
-├── package.json            # Root package.json
-└── pnpm-workspace.yaml     # Workspace configuration
-```
-
-### Package Management
+## Publishing
 
 ```bash
-# Add a dependency to a specific package
-pnpm add <dependency> --filter <package-name>
-
-# Add a development dependency to root
-pnpm add -Dw <dependency>
-
-# Run a command in a specific package
-pnpm --filter <package-name> <command>
+# Publish all packages
+pnpm publish-packages
 ```
 
-## 🌟 Featured Package: quick-gen-docs
+## License
 
-A powerful CLI tool that automatically generates comprehensive JSDoc documentation for React components. Save time and maintain consistent documentation across your React projects with automated JSDoc generation.
-
-### Key Features
-
-- 🔍 **Intelligent Component Detection**
-- 📝 **Automated JSDoc Generation**
-- 💪 **Broad Component Support**
-- 🎯 **Smart Props Analysis**
-- 🚀 **Non-Intrusive**
-
-For detailed information about quick-gen-docs, please see the [package documentation](packages/README.md).
-
-## 🔗 Links
-
-- [NPM Package](https://www.npmjs.com/package/quick-gen-docs)
-- [GitHub Repository](https://github.com/fufuShih/quick-gen-docs)
-- [Bug Reports](https://github.com/fufuShih/quick-gen-docs/issues)
-
-## 📄 License
-
-ISC © [fufuShih](https://github.com/fufuShih) 
+MIT © Felix Shih 
