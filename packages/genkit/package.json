@@ -26,7 +26,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@genkit/react": "workspace:*",
+    "@genkit/react": "^0.1.2",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
