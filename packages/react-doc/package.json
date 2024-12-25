@@ -1,10 +1,10 @@
 {
-  "name": "quick-gen-docs",
-  "version": "0.1.1",
+  "name": "@genkit/react",
+  "version": "0.1.2",
   "description": "",
   "main": "src/index.js",
   "bin": {
-    "quick-gen-docs": "./bin/cli.js"
+    "genkit-react": "./bin/cli.js"
   },
   "scripts": {
     "test": "jest",
@@ -12,12 +12,7 @@
   },
   "keywords": [],
   "author": "felix Shih",
-  "homepage": "https://github.com/fufuShih/quick-gen-docs",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/fufuShih/quick-gen-docs.git"
-  },
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@babel/core": "^7.23.0",
     "@babel/parser": "^7.23.0",
