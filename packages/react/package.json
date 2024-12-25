@@ -1,0 +1,32 @@
+{
+  "name": "@genkit/react",
+  "version": "0.1.2",
+  "description": "React jsdoc generator",
+  "main": "src/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "genkit-react": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [
+    "react",
+    "jsdoc",
+    "generator"
+  ],
+  "author": "felix Shih",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/parser": "^7.23.0",
+    "@babel/traverse": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "@babel/preset-react": "^7.22.15",
+    "glob": "^10.3.3",
+    "yargs": "^17.7.2"
+  }
+}
