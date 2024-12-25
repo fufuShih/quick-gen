@@ -1,9 +1,9 @@
-# quick-gen-docs
+# @genkit/react
 
-[![npm version](https://badge.fury.io/js/quick-gen-docs.svg)](https://www.npmjs.com/package/quick-gen-docs)
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![npm version](https://badge.fury.io/js/@genkit/react.svg)](https://www.npmjs.com/package/@genkit/react)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A powerful CLI tool that automatically generates comprehensive JSDoc documentation for React components. Save time and maintain consistent documentation across your React projects with automated JSDoc generation.
+A powerful tool that automatically generates comprehensive JSDoc documentation for React components. Part of the @genkit toolkit for automated documentation generation.
 
 ## 🌟 Features
 
@@ -21,15 +21,28 @@ A powerful CLI tool that automatically generates comprehensive JSDoc documentati
 
 ## 📦 Installation
 
+### Install CLI Tool (Required)
 ```bash
 # Using npm
-npm install quick-gen-docs --save-dev
+npm install -g @genkit/cli
 
 # Using yarn
-yarn add -D quick-gen-docs
+yarn global add @genkit/cli
 
 # Using pnpm
-pnpm add -D quick-gen-docs
+pnpm add -g @genkit/cli
+```
+
+### Install React Plugin
+```bash
+# Using npm
+npm install @genkit/react --save-dev
+
+# Using yarn
+yarn add -D @genkit/react
+
+# Using pnpm
+pnpm add -D @genkit/react
 ```
 
 ## 🚀 Usage
@@ -37,11 +50,11 @@ pnpm add -D quick-gen-docs
 ### Command Line Interface
 
 ```bash
-# Using npx
-npx quick-gen-docs --dir src
+# Using global CLI
+genkit react src/components
 
-# Using package script (after adding to package.json)
-npm run generate-docs
+# Using local installation
+npx genkit react src/components
 ```
 
 ### CLI Options
@@ -49,6 +62,7 @@ npm run generate-docs
 | Option   | Alias | Description                            | Default |
 | -------- | ----- | -------------------------------------- | ------- |
 | `--dir`  | `-d`  | Directory to scan for React components | `"src"` |
+| `--output` | `-o` | Output directory for documentation | `"docs"` |
 | `--help` | `-h`  | Show help information                  |         |
 
 ### Integration with package.json
@@ -58,7 +72,7 @@ Add a script to your package.json for easier access:
 ```json
 {
   "scripts": {
-    "generate-docs": "quick-gen-docs --dir src"
+    "generate-docs": "genkit react src/components"
   }
 }
 ```
@@ -100,8 +114,23 @@ const UserProfile = ({ name, age, ...props }) => {
 
 - Node.js >= 14
 - React project with `.js` or `.jsx` files
+- @genkit/cli installed
+
+## 📦 Related Packages
+
+- [@genkit/cli](https://www.npmjs.com/package/@genkit/cli) - Core CLI tool
+- [@genkit/react](https://www.npmjs.com/package/@genkit/react) - React documentation generator
 
 ## 🔗 Links
 
 - [GitHub Repository](https://github.com/fufuShih/genkit)
 - [Bug Reports](https://github.com/fufuShih/genkit/issues)
+- [npm Organization](https://www.npmjs.com/org/genkit)
+
+## Contributing
+
+1. Fork it
+2. Create your feature branch (`git checkout -b feature/my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin feature/my-new-feature`)
+5. Create new Pull Request

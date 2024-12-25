@@ -1,11 +1,34 @@
-# Genkit
+# @genkit/cli
+
+[![npm version](https://badge.fury.io/js/@genkit/cli.svg)](https://www.npmjs.com/package/@genkit/cli)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 A powerful CLI tool for generating code documentation and more.
 
 ## Installation
 
+### Global Installation (Recommended)
 ```bash
-npm install -g genkit
+# Using npm
+npm install -g @genkit/cli
+
+# Using yarn
+yarn global add @genkit/cli
+
+# Using pnpm
+pnpm add -g @genkit/cli
+```
+
+### Local Installation
+```bash
+# Using npm
+npm install @genkit/cli --save-dev
+
+# Using yarn
+yarn add -D @genkit/cli
+
+# Using pnpm
+pnpm add -D @genkit/cli
 ```
 
 ## Features
@@ -18,14 +41,23 @@ npm install -g genkit
 ### Generate React Documentation
 
 ```bash
-# Basic usage
+# Using global installation
+genkit react src/components
+
+# Using local installation
+npx genkit react src/components
+```
+
+### Common Commands
+```bash
+# Generate docs for components
 genkit react src/components
 
 # Specify output directory
 genkit react src/components --output docs/api
 
 # Show help
-genkit react --help
+genkit --help
 ```
 
 ### Options
@@ -41,18 +73,21 @@ genkit react --help
 | `--output` | `-o` | Output directory | `docs` |
 | `--help` | `-h` | Show help | |
 
-## Examples
+## 🛠️ Requirements
 
-```bash
-# Generate docs for src/components
-genkit react src/components
+- Node.js >= 14
+- React project with `.js` or `.jsx` files
 
-# Generate docs with custom output directory
-genkit react src/components -o custom/docs
+## 📦 Packages
 
-# Show help
-genkit --help
-```
+- [@genkit/cli](https://www.npmjs.com/package/@genkit/cli) - Core CLI tool
+- [@genkit/react](https://www.npmjs.com/package/@genkit/react) - React documentation generator
+
+## 🔗 Links
+
+- [GitHub Repository](https://github.com/fufuShih/genkit)
+- [Bug Reports](https://github.com/fufuShih/genkit/issues)
+- [npm Organization](https://www.npmjs.com/org/genkit)
 
 ## Contributing
 
@@ -61,13 +96,3 @@ genkit --help
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin feature/my-new-feature`)
 5. Create new Pull Request
-
-## 🛠️ Requirements
-
-- Node.js >= 14
-- React project with `.js` or `.jsx` files
-
-## 🔗 Links
-
-- [GitHub Repository](https://github.com/fufuShih/genkit)
-- [Bug Reports](https://github.com/fufuShih/genkit/issues)
