@@ -6,11 +6,10 @@
   "bin": {
     "genkit": "./bin/cli.js"
   },
-  "publishConfig": {
-    "access": "public"
-  },
-  "scripts": {
-    "test": "jest"
+  "homepage": "https://github.com/fufuShih/genkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fufuShih/genkit.git"
   },
   "keywords": [
     "generator",
@@ -19,6 +18,9 @@
   ],
   "author": "felix Shih",
   "license": "MIT",
+  "scripts": {
+    "test": "jest"
+  },
   "dependencies": {
     "@genkit/react": "workspace:*",
     "yargs": "^17.7.2"
