@@ -1,7 +1,7 @@
 {
-  "name": "genkit",
+  "name": "@genkit/cli",
   "version": "0.1.2",
-  "description": "Generator toolkit CLI",
+  "description": "Documentation generator toolkit CLI",
   "main": "src/index.js",
   "bin": {
     "genkit": "./bin/cli.js"
