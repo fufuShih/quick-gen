@@ -1,11 +1,19 @@
 {
-  "name": "root",
-  "private": true,
+  "name": "genkit",
+  "version": "0.1.2",
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm -r dev",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test"
   },
+  "keywords": [],
+  "author": "felix Shih",
+  "homepage": "https://github.com/fufuShih/genkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fufuShih/genkit.git"
+  },
+  "license": "MIT",
   "packageManager": "pnpm@8.9.0"
 } 
