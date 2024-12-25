@@ -6,6 +6,10 @@
   "bin": {
     "genkit": "./bin/cli.js"
   },
+  "files": [
+    "bin",
+    "src"
+  ],
   "homepage": "https://github.com/fufuShih/genkit",
   "repository": {
     "type": "git",
