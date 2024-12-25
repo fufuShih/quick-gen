@@ -1,6 +1,6 @@
 {
   "name": "quick-gen",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "description": "Code generation tools for modern web development",
   "scripts": {

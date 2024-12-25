@@ -1,6 +1,6 @@
 {
   "name": "@quick-gen/cli",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Quick and flexible code generation toolkit",
   "main": "src/index.js",
   "bin": {
@@ -26,7 +26,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@quick-gen/react": "^0.1.2",
+    "@quick-gen/react": "^0.1.4",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
