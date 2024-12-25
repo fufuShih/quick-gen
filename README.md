@@ -77,8 +77,8 @@ pnpm test
 
 | Package | Description | Version |
 |---------|------------|----------|
-| [@quick-gen/cli](packages/genkit/README.md) | Core CLI tool for code generation | [![npm version](https://badge.fury.io/js/@quick-gen/cli.svg)](https://www.npmjs.com/package/@quick-gen/cli) |
-| [@quick-gen/react](packages/react/README.md) | React code generator and documentation tool | [![npm version](https://badge.fury.io/js/@quick-gen/react.svg)](https://www.npmjs.com/package/@quick-gen/react) |
+| [@quick-gen/cli](packages/genkit/README.md) | Core CLI tool for code generation | [![npm version](https://img.shields.io/npm/v/@quick-gen/cli.svg)](https://www.npmjs.com/package/@quick-gen/cli) |
+| [@quick-gen/react](packages/react/README.md) | React code generator and documentation tool | [![npm version](https://img.shields.io/npm/v/@quick-gen/cli.svg)](https://www.npmjs.com/package/@quick-gen/cli) |
 
 ## 🔗 Links
 
