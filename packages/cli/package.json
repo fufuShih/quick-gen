@@ -23,7 +23,8 @@
   "author": "felix Shih",
   "license": "MIT",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "chmod +x ./bin/cli.js"
   },
   "dependencies": {
     "@quick-gen/react": "^0.1.7",
