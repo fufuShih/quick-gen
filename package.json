@@ -1,19 +1,8 @@
 {
-  "name": "genkit",
-  "version": "0.1.2",
+  "name": "genkit-monorepo",
+  "private": true,
   "scripts": {
-    "build": "pnpm -r build",
-    "dev": "pnpm -r dev",
-    "lint": "pnpm -r lint",
+    "publish-packages": "pnpm publish -r --access public",
     "test": "pnpm -r test"
-  },
-  "keywords": [],
-  "author": "felix Shih",
-  "homepage": "https://github.com/fufuShih/genkit",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/fufuShih/genkit.git"
-  },
-  "license": "MIT",
-  "packageManager": "pnpm@8.9.0"
+  }
 } 
