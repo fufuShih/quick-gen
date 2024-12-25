@@ -1,22 +1,22 @@
-# Genkit Monorepo
+# Quickgen Monorepo
 
-A collection of code generation tools for modern web development.
+A collection of quick and flexible code generation tools for modern web development.
 
 ## Packages
 
-- [genkit](packages/genkit/README.md) - Main CLI tool for code generation
-- [@genkit/react](packages/react/README.md) - React documentation generator
+- [@quickgen/cli](packages/genkit/README.md) - Main CLI tool for code generation
+- [@quickgen/react](packages/react/README.md) - React code generator and documentation tool
 
 ## Installation
 
 You can install the packages separately:
 
 ```bash
-# Install the CLI tool
-npm install -g genkit
+# Install the CLI tool globally
+npm install -g @quickgen/cli
 
 # Install the React package
-npm install @genkit/react
+npm install @quickgen/react --save-dev
 ```
 
 ## Usage
@@ -25,16 +25,16 @@ npm install @genkit/react
 
 ```bash
 # Generate React documentation
-genkit react src/components
+quickgen react src/components
 
 # Show help
-genkit --help
+quickgen --help
 ```
 
 ### Using the React package directly
 
 ```javascript
-const { generateDocs } = require('@genkit/react');
+const { generateDocs } = require('@quickgen/react');
 
 generateDocs('src/components');
 ```
@@ -60,6 +60,19 @@ pnpm test
 # Publish all packages
 pnpm publish-packages
 ```
+
+## 📦 Packages
+
+| Package | Description | Version |
+|---------|------------|----------|
+| [@quickgen/cli](packages/genkit/README.md) | Core CLI tool for code generation | [![npm version](https://badge.fury.io/js/@quickgen/cli.svg)](https://www.npmjs.com/package/@quickgen/cli) |
+| [@quickgen/react](packages/react/README.md) | React code generator and documentation tool | [![npm version](https://badge.fury.io/js/@quickgen/react.svg)](https://www.npmjs.com/package/@quickgen/react) |
+
+## 🔗 Links
+
+- [GitHub Repository](https://github.com/fufuShih/genkit)
+- [Bug Reports](https://github.com/fufuShih/genkit/issues)
+- [npm Organization](https://www.npmjs.com/org/quickgen)
 
 ## License
 

@@ -1,34 +1,34 @@
-# @genkit/cli
+# @quickgen/cli
 
-[![npm version](https://badge.fury.io/js/@genkit/cli.svg)](https://www.npmjs.com/package/@genkit/cli)
+[![npm version](https://badge.fury.io/js/@quickgen/cli.svg)](https://www.npmjs.com/package/@quickgen/cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A powerful CLI tool for generating code documentation and more.
+A quick and flexible code generation toolkit.
 
 ## Installation
 
 ### Global Installation (Recommended)
 ```bash
 # Using npm
-npm install -g @genkit/cli
+npm install -g @quickgen/cli
 
 # Using yarn
-yarn global add @genkit/cli
+yarn global add @quickgen/cli
 
 # Using pnpm
-pnpm add -g @genkit/cli
+pnpm add -g @quickgen/cli
 ```
 
 ### Local Installation
 ```bash
 # Using npm
-npm install @genkit/cli --save-dev
+npm install @quickgen/cli --save-dev
 
 # Using yarn
-yarn add -D @genkit/cli
+yarn add -D @quickgen/cli
 
 # Using pnpm
-pnpm add -D @genkit/cli
+pnpm add -D @quickgen/cli
 ```
 
 ## Features

@@ -1,5 +1,5 @@
 {
-  "name": "genkit-monorepo",
+  "name": "quickgen-monorepo",
   "private": true,
   "description": "Code generation tools for modern web development",
   "scripts": {
@@ -7,10 +7,10 @@
     "test": "pnpm -r test",
     "build": "pnpm -r build"
   },
-  "homepage": "https://github.com/fufuShih/genkit",
+  "homepage": "https://github.com/fufuShih/quickgen",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fufuShih/genkit.git"
+    "url": "https://github.com/fufuShih/quickgen.git"
   },
   "keywords": [
     "generator",

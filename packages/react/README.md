@@ -1,9 +1,9 @@
-# @genkit/react
+# @quickgen/react
 
-[![npm version](https://badge.fury.io/js/@genkit/react.svg)](https://www.npmjs.com/package/@genkit/react)
+[![npm version](https://badge.fury.io/js/@quickgen/react.svg)](https://www.npmjs.com/package/@quickgen/react)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A powerful tool that automatically generates comprehensive JSDoc documentation for React components. Part of the @genkit toolkit for automated documentation generation.
+A powerful tool that automatically generates comprehensive JSDoc documentation for React components. Part of the @quickgen toolkit.
 
 ## 🌟 Features
 
@@ -24,25 +24,25 @@ A powerful tool that automatically generates comprehensive JSDoc documentation f
 ### Install CLI Tool (Required)
 ```bash
 # Using npm
-npm install -g @genkit/cli
+npm install -g @quickgen/cli
 
 # Using yarn
-yarn global add @genkit/cli
+yarn global add @quickgen/cli
 
 # Using pnpm
-pnpm add -g @genkit/cli
+pnpm add -g @quickgen/cli
 ```
 
 ### Install React Plugin
 ```bash
 # Using npm
-npm install @genkit/react --save-dev
+npm install @quickgen/react --save-dev
 
 # Using yarn
-yarn add -D @genkit/react
+yarn add -D @quickgen/react
 
 # Using pnpm
-pnpm add -D @genkit/react
+pnpm add -D @quickgen/react
 ```
 
 ## 🚀 Usage
@@ -51,10 +51,10 @@ pnpm add -D @genkit/react
 
 ```bash
 # Using global CLI
-genkit react src/components
+quickgen react src/components
 
 # Using local installation
-npx genkit react src/components
+npx quickgen react src/components
 ```
 
 ### CLI Options
@@ -72,7 +72,7 @@ Add a script to your package.json for easier access:
 ```json
 {
   "scripts": {
-    "generate-docs": "genkit react src/components"
+    "generate-docs": "quickgen react src/components"
   }
 }
 ```
@@ -114,18 +114,18 @@ const UserProfile = ({ name, age, ...props }) => {
 
 - Node.js >= 14
 - React project with `.js` or `.jsx` files
-- @genkit/cli installed
+- @quickgen/cli installed
 
 ## 📦 Related Packages
 
-- [@genkit/cli](https://www.npmjs.com/package/@genkit/cli) - Core CLI tool
-- [@genkit/react](https://www.npmjs.com/package/@genkit/react) - React documentation generator
+- [@quickgen/cli](https://www.npmjs.com/package/@quickgen/cli) - Core CLI tool
+- [@quickgen/react](https://www.npmjs.com/package/@quickgen/react) - React documentation generator
 
 ## 🔗 Links
 
 - [GitHub Repository](https://github.com/fufuShih/genkit)
 - [Bug Reports](https://github.com/fufuShih/genkit/issues)
-- [npm Organization](https://www.npmjs.com/org/genkit)
+- [npm Organization](https://www.npmjs.com/org/quickgen)
 
 ## Contributing
 

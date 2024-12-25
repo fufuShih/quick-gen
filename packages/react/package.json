@@ -1,18 +1,18 @@
 {
-  "name": "@genkit/react",
+  "name": "@quickgen/react",
   "version": "0.1.2",
-  "description": "React jsdoc generator",
+  "description": "React code generator and documentation tool",
   "main": "src/index.js",
   "publishConfig": {
     "access": "public"
   },
   "bin": {
-    "genkit-react": "./bin/cli.js"
+    "quickgen-react": "./bin/cli.js"
   },
-  "homepage": "https://github.com/fufuShih/genkit",
+  "homepage": "https://github.com/fufuShih/quickgen",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fufuShih/genkit.git"
+    "url": "https://github.com/fufuShih/quickgen.git"
   },
   "keywords": [
     "react",
