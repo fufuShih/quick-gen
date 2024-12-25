@@ -43,14 +43,11 @@ pnpm add -D @quick-gen/react
 ### Using the CLI tool
 
 ```bash
-# Generate React documentation
-quickgen react src/components
-
-# Specify output directory
-quickgen react src/components --output docs/api
+# Generate JSDoc for React components
+quick-gen react -d src/components
 
 # Show help
-quickgen --help
+quick-gen --help
 ```
 
 ### Using the React package directly

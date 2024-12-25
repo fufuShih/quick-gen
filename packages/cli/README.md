@@ -44,19 +44,16 @@ pnpm add -D @quick-gen/cli
 
 ```bash
 # Using global installation
-quick-gen react src/components
+quick-gen react -d src/components
 
 # Using local installation
-npx quick-gen react src/components
+npx quick-gen react -d src/components
 ```
 
 ### Common Commands
 ```bash
 # Generate docs for components
-quick-gen react src/components
-
-# Specify output directory
-quick-gen react src/components --output docs/api
+quick-gen react -d src/components
 
 # Show help
 quick-gen --help
@@ -66,13 +63,13 @@ quick-gen --help
 
 | Command | Description |
 |---------|-------------|
-| `react [dir]` | Generate React documentation |
+| `react -d [dir]` | Generate JSDoc for React components |
 
 #### React Command Options
 
 | Option | Alias | Description | Default |
 |--------|-------|-------------|---------|
-| `--output` | `-o` | Output directory | `docs` |
+| `--dir` | `-d` | Directory to scan for React components | `src` |
 | `--help` | `-h` | Show help | |
 
 ## 🛠️ Requirements
@@ -90,11 +87,3 @@ quick-gen --help
 - [GitHub Repository](https://github.com/fufuShih/quick-gen)
 - [Bug Reports](https://github.com/fufuShih/quick-gen/issues)
 - [npm Organization](https://www.npmjs.com/org/quick-gen)
-
-## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b feature/my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin feature/my-new-feature`)
-5. Create new Pull Request

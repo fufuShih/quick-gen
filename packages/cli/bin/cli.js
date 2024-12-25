@@ -5,21 +5,17 @@ const { hideBin } = require('yargs/helpers');
 const { generateDocs } = require('@quick-gen/react');
 
 yargs(hideBin(process.argv))
-  .command('react [dir]', 'Generate React documentation', (yargs) => {
+  .command('react', 'Generate JSDoc for React components', (yargs) => {
     return yargs
-      .positional('dir', {
-        describe: 'Directory to scan for React components',
-        default: 'src'
-      })
-      .option('output', {
-        alias: 'o',
+      .option('dir', {
+        alias: 'd',
         type: 'string',
-        description: 'Output directory for documentation',
-        default: 'docs'
+        description: 'Directory to scan for React components',
+        default: 'src'
       });
   }, (argv) => {
     try {
-      generateDocs(argv.dir, argv.output);
+      generateDocs(argv.dir);
     } catch (error) {
       console.error('Error generating documentation:', error.message);
       process.exit(1);

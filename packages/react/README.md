@@ -45,10 +45,7 @@ pnpm add -D @quick-gen/react
 
 ```bash
 # Using npx
-npx quickgen react src/components
-
-# Using package.json script
-npm run generate-docs
+npx quick-gen react src/components
 ```
 
 ### Integration with package.json
@@ -58,7 +55,7 @@ Add a script to your package.json:
 ```json
 {
   "scripts": {
-    "generate-docs": "quickgen react src/components"
+    "generate-docs": "quick-gen-react -d 'src/components'"
   }
 }
 ```
