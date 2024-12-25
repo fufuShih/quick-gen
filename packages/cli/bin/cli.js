@@ -2,7 +2,7 @@
 
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
-const { generateDocs } = require('@genkit/react');
+const { generateDocs } = require('@quick-gen/react');
 
 yargs(hideBin(process.argv))
   .command('react [dir]', 'Generate React documentation', (yargs) => {
