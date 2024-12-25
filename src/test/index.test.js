@@ -138,6 +138,11 @@ export default Button4;`
       name: 'multiple components file',
       file: 'MultipleComponents.jsx',
       description: 'File with multiple components, some with existing JSDoc'
+    },
+    {
+      name: 'component with const functions',
+      file: 'ButtonWithConstFunction.jsx',
+      description: 'Component with internal const functions'
     }
   ];
 
