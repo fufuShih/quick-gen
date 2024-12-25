@@ -1,5 +1,5 @@
 {
-  "name": "quickgen-monorepo",
+  "name": "quick-gen",
   "private": true,
   "description": "Code generation tools for modern web development",
   "scripts": {
