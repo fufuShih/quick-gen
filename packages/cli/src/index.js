@@ -1,4 +1,4 @@
-const { generateDocs } = require('@genkit/react');
+const { generateDocs } = require('@quick-gen/react');
 
 module.exports = {
   generateDocs,
