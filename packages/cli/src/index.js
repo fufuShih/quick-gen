@@ -1,5 +1,5 @@
 const { generateDocs } = require('@quick-gen/react');
 
-module.exports = {
-  generateDocs,
+exports.generateDocs = (dir) => {
+  return generateDocs(dir);
 }; 

@@ -2,7 +2,7 @@
 
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
-const { generateDocs } = require('@quick-gen/react');
+const { generateDocs } = require('../src/index.js');
 
 yargs(hideBin(process.argv))
   .command('react', 'Generate JSDoc for React components', (yargs) => {
@@ -15,7 +15,9 @@ yargs(hideBin(process.argv))
       });
   }, (argv) => {
     try {
-      generateDocs(argv.dir);
+      const fullPath = argv.dir ? `${process.cwd()}/${argv.dir}` : `${process.cwd()}/src`;
+      console.log('Scanning directory:', fullPath);
+      generateDocs(fullPath);
     } catch (error) {
       console.error('Error generating documentation:', error.message);
       process.exit(1);
