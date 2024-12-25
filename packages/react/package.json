@@ -1,5 +1,5 @@
 {
-  "name": "@quickgen/react",
+  "name": "@quick-gen/react",
   "version": "0.1.2",
   "description": "React code generator and documentation tool",
   "main": "src/index.js",
@@ -7,12 +7,12 @@
     "access": "public"
   },
   "bin": {
-    "quickgen-react": "./bin/cli.js"
+    "quick-gen-react": "./bin/cli.js"
   },
-  "homepage": "https://github.com/fufuShih/quickgen",
+  "homepage": "https://github.com/fufuShih/quick-gen",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fufuShih/quickgen.git"
+    "url": "https://github.com/fufuShih/quick-gen.git"
   },
   "keywords": [
     "react",

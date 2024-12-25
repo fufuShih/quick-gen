@@ -1,66 +1,68 @@
-# @quickgen/cli
+# @quick-gen/cli
 
-[![npm version](https://badge.fury.io/js/@quickgen/cli.svg)](https://www.npmjs.com/package/@quickgen/cli)
+[![npm version](https://badge.fury.io/js/@quick-gen/cli.svg)](https://www.npmjs.com/package/@quick-gen/cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 A quick and flexible code generation toolkit.
 
-## Installation
+## 🚀 Features
+
+- 📝 **Code Generation**: Generate various types of code and documentation
+- 🔧 **Plugin System**: Extensible architecture for different generation needs
+- 🎯 **Easy to Use**: Simple and intuitive CLI interface
+- 🔄 More features coming soon...
+
+## 📦 Installation
 
 ### Global Installation (Recommended)
 ```bash
 # Using npm
-npm install -g @quickgen/cli
+npm install -g @quick-gen/cli
 
 # Using yarn
-yarn global add @quickgen/cli
+yarn global add @quick-gen/cli
 
 # Using pnpm
-pnpm add -g @quickgen/cli
+pnpm add -g @quick-gen/cli
 ```
 
 ### Local Installation
 ```bash
 # Using npm
-npm install @quickgen/cli --save-dev
+npm install @quick-gen/cli --save-dev
 
 # Using yarn
-yarn add -D @quickgen/cli
+yarn add -D @quick-gen/cli
 
 # Using pnpm
-pnpm add -D @quickgen/cli
+pnpm add -D @quick-gen/cli
 ```
 
-## Features
-
-- 📝 React Documentation Generation
-- 🔄 More features coming soon...
-
-## Usage
+## 🎯 Usage
 
 ### Generate React Documentation
 
 ```bash
 # Using global installation
-genkit react src/components
+quick-gen react src/components
 
 # Using local installation
-npx genkit react src/components
+npx quick-gen react src/components
 ```
 
 ### Common Commands
 ```bash
 # Generate docs for components
-genkit react src/components
+quick-gen react src/components
 
 # Specify output directory
-genkit react src/components --output docs/api
+quick-gen react src/components --output docs/api
 
 # Show help
-genkit --help
+quick-gen --help
 ```
 
-### Options
+### CLI Options
 
 | Command | Description |
 |---------|-------------|
@@ -78,16 +80,16 @@ genkit --help
 - Node.js >= 14
 - React project with `.js` or `.jsx` files
 
-## 📦 Packages
+## 📦 Related Packages
 
-- [@genkit/cli](https://www.npmjs.com/package/@genkit/cli) - Core CLI tool
-- [@genkit/react](https://www.npmjs.com/package/@genkit/react) - React documentation generator
+- [@quick-gen/cli](https://www.npmjs.com/package/@quick-gen/cli) - Core CLI tool
+- [@quick-gen/react](https://www.npmjs.com/package/@quick-gen/react) - React documentation generator
 
 ## 🔗 Links
 
-- [GitHub Repository](https://github.com/fufuShih/genkit)
-- [Bug Reports](https://github.com/fufuShih/genkit/issues)
-- [npm Organization](https://www.npmjs.com/org/genkit)
+- [GitHub Repository](https://github.com/fufuShih/quick-gen)
+- [Bug Reports](https://github.com/fufuShih/quick-gen/issues)
+- [npm Organization](https://www.npmjs.com/org/quick-gen)
 
 ## Contributing
 
