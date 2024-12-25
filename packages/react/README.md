@@ -1,6 +1,6 @@
 # @quick-gen/react
 
-[![npm version](https://badge.fury.io/js/@quick-gen/react.svg)](https://www.npmjs.com/package/@quick-gen/react)
+[![npm version](https://img.shields.io/npm/v/@quick-gen/react.svg)](https://www.npmjs.com/package/@quick-gen/react)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 A powerful tool that automatically generates comprehensive JSDoc documentation for React components. Part of the @quick-gen toolkit.

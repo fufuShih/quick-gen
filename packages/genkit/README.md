@@ -1,6 +1,6 @@
 # @quick-gen/cli
 
-[![npm version](https://badge.fury.io/js/@quick-gen/cli.svg)](https://www.npmjs.com/package/@quick-gen/cli)
+[![npm version](https://img.shields.io/npm/v/@quick-gen/cli.svg)](https://www.npmjs.com/package/@quick-gen/cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 A quick and flexible code generation toolkit.
