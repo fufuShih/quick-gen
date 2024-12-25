@@ -1,0 +1,29 @@
+{
+  "name": "genkit",
+  "version": "0.1.2",
+  "description": "Generator toolkit CLI",
+  "main": "src/index.js",
+  "bin": {
+    "genkit": "./bin/cli.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "generator",
+    "cli",
+    "documentation"
+  ],
+  "author": "felix Shih",
+  "license": "MIT",
+  "dependencies": {
+    "@genkit/react": "workspace:*",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+} 
