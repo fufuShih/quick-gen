@@ -180,7 +180,7 @@ function analyzeComponent(path, componentInfo) {
   if (path.node.params && path.node.params[0]) {
     const firstParam = path.node.params[0];
     if (firstParam.type === 'Identifier') {
-      // 尋找解構賦值
+      // Find destructuring assignment
       path.traverse({
         VariableDeclarator(path) {
           const init = path.node.init;
