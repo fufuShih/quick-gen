@@ -1,0 +1,22 @@
+{
+  "name": "@your-project/knowledge",
+  "version": "0.1.8",
+  "description": "Knowledge graph generator for JavaScript/TypeScript projects",
+  "main": "src/index.js",
+  "bin": {
+    "knowledge": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.24.0",
+    "@babel/traverse": "^7.24.0",
+    "@babel/types": "^7.24.0",
+    "glob": "^10.3.10",
+    "mkdirp": "^3.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+} 

@@ -6,7 +6,8 @@
   "scripts": {
     "publish-packages": "pnpm publish -r --access public",
     "test": "pnpm -r test",
-    "build": "pnpm -r build"
+    "build": "pnpm -r build",
+    "knowledge": "knowledge"
   },
   "homepage": "https://github.com/fufuShih/quickgen",
   "repository": {
@@ -19,5 +20,8 @@
     "development-tools"
   ],
   "author": "felix Shih",
-  "license": "MIT"
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ]
 } 
