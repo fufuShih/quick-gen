@@ -1,6 +1,6 @@
 {
   "name": "@quick-gen/knowledge",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Knowledge graph generator for JavaScript/TypeScript projects and friendly for ai",
   "main": "src/index.js",
   "publishConfig": {
@@ -29,4 +29,4 @@
   "devDependencies": {
     "jest": "^29.7.0"
   }
-} 
+}
