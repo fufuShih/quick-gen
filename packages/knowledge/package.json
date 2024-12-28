@@ -1,11 +1,21 @@
 {
-  "name": "@your-project/knowledge",
+  "name": "@quick-gen/knowledge",
   "version": "0.1.8",
-  "description": "Knowledge graph generator for JavaScript/TypeScript projects",
+  "description": "Knowledge graph generator for JavaScript/TypeScript projects and friendly for ai",
   "main": "src/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "quick-gen-knowledge": "./bin/cli.js"
   },
+  "homepage": "https://github.com/fufuShih/quick-gen",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fufuShih/quick-gen.git"
+  },
+  "author": "felix Shih",
+  "license": "MIT",
   "scripts": {
     "test": "jest"
   },
