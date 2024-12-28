@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
-const { generateDocs } = require('../src/index.js');
+const { generateDocs, generateKnowledge } = require('../src/index.js');
 
 yargs(hideBin(process.argv))
   .command('react', 'Generate JSDoc for React components', (yargs) => {
@@ -19,6 +19,24 @@ yargs(hideBin(process.argv))
       generateDocs(fullPath);
     } catch (error) {
       console.error('Error generating documentation:', error.message);
+      process.exit(1);
+    }
+  })
+  .command('knowledge', 'Generate knowledge graph for JavaScript/TypeScript projects', (yargs) => {
+    return yargs
+      .option('dir', {
+        alias: 'd',
+        type: 'string',
+        description: 'Directory to scan for JS/TS files',
+        default: '.'
+      });
+  }, (argv) => {
+    try {
+      const fullPath = argv.dir ? `${process.cwd()}/${argv.dir}` : process.cwd();
+      console.log('Generating knowledge graph from:', fullPath);
+      generateKnowledge(fullPath);
+    } catch (error) {
+      console.error('Error generating knowledge graph:', error.message);
       process.exit(1);
     }
   })
