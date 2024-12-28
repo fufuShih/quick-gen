@@ -4,7 +4,7 @@
   "description": "Knowledge graph generator for JavaScript/TypeScript projects",
   "main": "src/index.js",
   "bin": {
-    "knowledge": "./bin/cli.js"
+    "quick-gen-knowledge": "./bin/cli.js"
   },
   "scripts": {
     "test": "jest"
