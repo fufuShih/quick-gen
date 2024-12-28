@@ -7,7 +7,10 @@
     "publish-packages": "pnpm publish -r --access public",
     "test": "pnpm -r test",
     "build": "pnpm -r build",
-    "knowledge": "knowledge"
+    "knowledge": "knowledge",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "release": "pnpm build && pnpm changeset publish"
   },
   "homepage": "https://github.com/fufuShih/quickgen",
   "repository": {
@@ -23,5 +26,8 @@
   "license": "MIT",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1"
+  }
 } 
