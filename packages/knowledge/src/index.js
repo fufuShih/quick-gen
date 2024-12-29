@@ -12,7 +12,6 @@ async function generateKnowledge(dir) {
 
   const parser = createParser();
   
-  // Find all JS/TS files
   const files = await glob('**/*.{js,jsx,ts,tsx}', {
     ignore: ['node_modules/**', 'dist/**', '.knowledge/**'],
     cwd: dir
