@@ -1,5 +1,14 @@
 # @quick-gen/cli
 
+## 0.1.11
+
+### Patch Changes
+
+- update the monorepo
+- Updated dependencies
+  - @quick-gen/knowledge@0.1.11
+  - @quick-gen/react@0.1.11
+
 ## 0.1.10
 
 ### Patch Changes

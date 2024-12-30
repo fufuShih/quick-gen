@@ -1,5 +1,11 @@
 # @quick-gen/react
 
+## 0.1.11
+
+### Patch Changes
+
+- update the monorepo
+
 ## 0.1.10
 
 ### Patch Changes
