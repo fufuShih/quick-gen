@@ -14,9 +14,12 @@ importers:
 
   packages/cli:
     dependencies:
+      '@quick-gen/knowledge':
+        specifier: ^0.1.10
+        version: 0.1.10
       '@quick-gen/react':
-        specifier: ^0.1.8
-        version: 0.1.8
+        specifier: ^0.1.10
+        version: 0.1.10
       yargs:
         specifier: ^17.7.2
         version: 17.7.2
@@ -42,6 +45,9 @@ importers:
       mkdirp:
         specifier: ^3.0.1
         version: 3.0.1
+      yargs:
+        specifier: ^17.7.2
+        version: 17.7.2
     devDependencies:
       jest:
         specifier: ^29.7.0
@@ -853,8 +859,12 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@quick-gen/react@0.1.8':
-    resolution: {integrity: sha512-ZfM01HGtV5SwVPw6ZVHVHUmCplje19D19iiSPxvFQk4j4H16nYbgXKyI/Z6x7Vu4W70izHHt3iOmhmpZ+toOkA==}
+  '@quick-gen/knowledge@0.1.10':
+    resolution: {integrity: sha512-/i+PzrYs1jXnxON088QdrvTyeuJ3K7owR5GVqW5kbKWA0J0R+tpexzM26Xb43I7Cv+q+2iwMSMVkZ1UK0+x+1w==}
+    hasBin: true
+
+  '@quick-gen/react@0.1.10':
+    resolution: {integrity: sha512-nJB/1QLIh+A6XaYrn+i0//42OLvgDZKiIkh9xCajHrxf7cZTUA+P3RTTegSNCyKlyJIuvf8Pa0Y5gXjoIhY1yg==}
     hasBin: true
 
   '@sinclair/typebox@0.27.8':
@@ -3126,7 +3136,17 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@quick-gen/react@0.1.8':
+  '@quick-gen/knowledge@0.1.10':
+    dependencies:
+      '@babel/parser': 7.26.3
+      '@babel/traverse': 7.26.4
+      '@babel/types': 7.26.3
+      glob: 10.4.5
+      mkdirp: 3.0.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@quick-gen/react@0.1.10':
     dependencies:
       '@babel/core': 7.26.0
       '@babel/parser': 7.26.3

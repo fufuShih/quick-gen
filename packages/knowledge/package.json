@@ -24,7 +24,8 @@
     "@babel/traverse": "^7.24.0",
     "@babel/types": "^7.24.0",
     "glob": "^10.3.10",
-    "mkdirp": "^3.0.1"
+    "mkdirp": "^3.0.1",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "jest": "^29.7.0"
