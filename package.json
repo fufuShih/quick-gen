@@ -10,7 +10,8 @@
     "knowledge": "knowledge",
     "changeset": "changeset",
     "changeset:version": "changeset version",
-    "release": "pnpm build && pnpm changeset publish"
+    "release": "pnpm build && pnpm changeset publish",
+    "clean": "pnpm -r clean"
   },
   "homepage": "https://github.com/fufuShih/quickgen",
   "repository": {
@@ -28,6 +29,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@changesets/cli": "^2.27.1"
+    "@changesets/cli": "^2.27.1",
+    "rimraf": "^6.0.1"
   }
-} 
+}
