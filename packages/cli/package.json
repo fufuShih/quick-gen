@@ -1,6 +1,6 @@
 {
   "name": "@quick-gen/cli",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Quick and flexible code generation toolkit",
   "main": "src/index.js",
   "bin": {
@@ -27,8 +27,8 @@
     "postinstall": "chmod +x ./bin/cli.js"
   },
   "dependencies": {
-    "@quick-gen/react": "^0.1.11",
-    "@quick-gen/knowledge": "^0.1.11",
+    "@quick-gen/react": "^0.1.12",
+    "@quick-gen/knowledge": "^0.1.12",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

@@ -1,5 +1,11 @@
 # @quick-gen/knowledge
 
+## 0.1.12
+
+### Patch Changes
+
+- Add the trace command with knowledge cli
+
 ## 0.1.11
 
 ### Patch Changes
