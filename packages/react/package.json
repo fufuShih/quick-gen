@@ -36,6 +36,7 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "rimraf": "^6.0.1"
   }
 }
