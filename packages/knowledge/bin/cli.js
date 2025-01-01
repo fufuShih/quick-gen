@@ -102,6 +102,87 @@ async function generateKnowledge() {
   console.log('Knowledge files generated in .knowledge directory');
 }
 
+// Add new function to trace symbol calls
+function traceSymbol(symbolName, options = {}) {
+  const knowledgeDir = path.join(process.cwd(), '.knowledge');
+  
+  try {
+    const fileSymbols = JSON.parse(fs.readFileSync(
+      path.join(knowledgeDir, 'fileSymbols.json'), 
+      'utf-8'
+    ));
+    
+    const functionCalls = JSON.parse(fs.readFileSync(
+      path.join(knowledgeDir, 'functionCalls.json'), 
+      'utf-8'
+    ));
+
+    const fileImports = JSON.parse(fs.readFileSync(
+      path.join(knowledgeDir, 'fileImports.json'), 
+      'utf-8'
+    ));
+
+    // 準備輸出的 JSON 結構
+    const traceResult = {
+      symbol: symbolName,
+      definition: null,
+      calls: [],
+      imports: []
+    };
+
+    // 找到符號定義
+    for (const [file, symbols] of Object.entries(fileSymbols)) {
+      const found = symbols.find(s => s.name === symbolName);
+      if (found) {
+        traceResult.definition = {
+          file,
+          ...found
+        };
+        break;
+      }
+    }
+
+    if (!traceResult.definition) {
+      console.log(JSON.stringify({ error: `Symbol '${symbolName}' not found` }, null, 2));
+      return;
+    }
+
+    // 收集調用信息
+    for (const [file, calls] of Object.entries(functionCalls)) {
+      const relevantCalls = calls.filter(call => call.name === symbolName);
+      if (relevantCalls.length > 0) {
+        traceResult.calls.push({
+          file,
+          calls: relevantCalls
+        });
+      }
+    }
+
+    // 收集導入信息
+    for (const [file, imports] of Object.entries(fileImports)) {
+      const relevantImports = imports.filter(imp => 
+        imp.specifiers.some(spec => spec.local === symbolName || spec.imported === symbolName)
+      );
+      if (relevantImports.length > 0) {
+        traceResult.imports.push({
+          file,
+          imports: relevantImports
+        });
+      }
+    }
+
+    // 輸出 JSON
+    console.log(JSON.stringify(traceResult, null, 2));
+
+  } catch (error) {
+    console.log(JSON.stringify({
+      error: 'Error reading knowledge files',
+      message: error.message,
+      hint: 'Have you generated the knowledge base? Try running: knowledge generate'
+    }, null, 2));
+  }
+}
+
 // 設定 CLI 命令
 yargs(hideBin(process.argv))
   .command('generate', 'Generate knowledge base for the current project', {}, generateKnowledge)
@@ -129,6 +210,17 @@ yargs(hideBin(process.argv))
       refs: argv.refs
     });
   })
+  .command('trace <symbol>', 'Trace symbol usage and call chains', {
+    detailed: {
+      alias: 'd',
+      type: 'boolean',
+      description: 'Show detailed information including implementation'
+    }
+  }, (argv) => {
+    traceSymbol(argv.symbol, {
+      detailed: argv.detailed
+    });
+  })
   .command('help', 'Show help information', {}, (argv) => {
     yargs.showHelp();
   })
@@ -137,6 +229,8 @@ yargs(hideBin(process.argv))
   .example('$0 query src/components/Button.js -s', 'Show only symbols for Button.js')
   .example('$0 query src/components/Button.js -i', 'Show only imports for Button.js')
   .example('$0 query src/components/Button.js -r', 'Show only references for Button.js')
+  .example('$0 trace myFunction', 'Show where myFunction is defined and called')
+  .example('$0 trace MyComponent -d', 'Show detailed information about MyComponent')
   .demandCommand(1, 'You need at least one command before moving on')
   .help('h')
   .alias('h', 'help')

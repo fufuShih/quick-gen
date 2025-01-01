@@ -8,7 +8,9 @@ function createParser() {
     // Store all file information
     files: new Map(),
     // Store all symbol reference relationships
-    symbolGraph: new Map()
+    symbolGraph: new Map(),
+    // Add new state for tracking function calls
+    functionCalls: new Map()
   };
 
   function parseFile(filePath) {
@@ -164,6 +166,37 @@ function createParser() {
           }
         };
         fileInfo.dependencies.exports.push(exportInfo);
+      },
+
+      // Add new visitor for tracking function calls
+      CallExpression(path) {
+        let calleeName;
+        if (path.node.callee.type === 'Identifier') {
+          calleeName = path.node.callee.name;
+        } else if (path.node.callee.type === 'MemberExpression') {
+          calleeName = path.node.callee.property.name;
+        }
+
+        if (calleeName) {
+          const callInfo = {
+            name: calleeName,
+            location: {
+              start: path.node.loc.start.line,
+              end: path.node.loc.end.line
+            },
+            arguments: path.node.arguments.map(arg => {
+              if (arg.type === 'Identifier') {
+                return arg.name;
+              }
+              return arg.type;
+            }),
+            context: path.scope.getFunctionParent()?.block?.id?.name || 'global'
+          };
+
+          const calls = state.functionCalls.get(filePath) || [];
+          calls.push(callInfo);
+          state.functionCalls.set(filePath, calls);
+        }
       }
     };
 
@@ -177,7 +210,9 @@ function createParser() {
     const knowledge = {
       files: {},
       dependencies: {},
-      symbols: {}
+      symbols: {},
+      // Add function calls to knowledge
+      functionCalls: {}
     };
 
     // Convert file information
@@ -204,6 +239,11 @@ function createParser() {
         references: fileInfo.dependencies.references,
         exports: fileInfo.dependencies.exports
       };
+    }
+
+    // Add function calls to knowledge
+    for (const [filePath, calls] of state.functionCalls) {
+      knowledge.functionCalls[filePath] = calls;
     }
 
     return knowledge;
