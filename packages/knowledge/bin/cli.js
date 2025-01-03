@@ -8,12 +8,12 @@ const fs = require('fs');
 const { mkdirp } = require('mkdirp');
 const createParser = require('../src/parser');
 
-// 查詢知識庫的函數
+// query knowledge base function
 function queryKnowledge(filePath, options = {}) {
   const knowledgeDir = path.join(process.cwd(), '.knowledge');
   
   try {
-    // 讀取所有知識檔案
+    // read all knowledge files
     const fileSymbols = JSON.parse(fs.readFileSync(
       path.join(knowledgeDir, 'fileSymbols.json'), 
       'utf-8'
@@ -29,14 +29,14 @@ function queryKnowledge(filePath, options = {}) {
       'utf-8'
     ));
 
-    // 找到目標檔案的資訊
+    // find target file info
     const fileInfo = {
       symbols: fileSymbols[filePath] || {},
       imports: fileImports[filePath] || {},
       references: symbolRefs[filePath] || {}
     };
 
-    // 格式化輸出
+    // format output
     console.log('\n=== File Knowledge ===');
     console.log(`\nFile: ${filePath}`);
     
@@ -122,7 +122,7 @@ function traceSymbol(symbolName, options = {}) {
       'utf-8'
     ));
 
-    // 準備輸出的 JSON 結構
+    // prepare output json structure
     const traceResult = {
       symbol: symbolName,
       definition: null,
@@ -130,7 +130,7 @@ function traceSymbol(symbolName, options = {}) {
       imports: []
     };
 
-    // 找到符號定義
+    // find symbol definition
     for (const [file, symbols] of Object.entries(fileSymbols)) {
       const found = symbols.find(s => s.name === symbolName);
       if (found) {
@@ -147,7 +147,7 @@ function traceSymbol(symbolName, options = {}) {
       return;
     }
 
-    // 收集調用信息
+    // Collect call information
     for (const [file, calls] of Object.entries(functionCalls)) {
       const relevantCalls = calls.filter(call => call.name === symbolName);
       if (relevantCalls.length > 0) {
@@ -158,7 +158,7 @@ function traceSymbol(symbolName, options = {}) {
       }
     }
 
-    // 收集導入信息
+    // Collect import information
     for (const [file, imports] of Object.entries(fileImports)) {
       const relevantImports = imports.filter(imp => 
         imp.specifiers.some(spec => spec.local === symbolName || spec.imported === symbolName)
@@ -171,7 +171,7 @@ function traceSymbol(symbolName, options = {}) {
       }
     }
 
-    // 輸出 JSON
+    // output json
     console.log(JSON.stringify(traceResult, null, 2));
 
   } catch (error) {
@@ -183,7 +183,6 @@ function traceSymbol(symbolName, options = {}) {
   }
 }
 
-// 設定 CLI 命令
 yargs(hideBin(process.argv))
   .command('generate', 'Generate knowledge base for the current project', {}, generateKnowledge)
   .command('query <file>', 'Query knowledge base for a specific file', {
