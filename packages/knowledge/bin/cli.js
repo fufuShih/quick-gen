@@ -7,10 +7,12 @@ const path = require('path');
 const fs = require('fs');
 const { mkdirp } = require('mkdirp');
 const createParser = require('../src/parser');
+const { normalize } = require('path');
 
 // query knowledge base function
 function queryKnowledge(filePath, options = {}) {
   const knowledgeDir = path.join(process.cwd(), '.knowledge');
+  const normalizedPath = normalize(filePath).replace(/\\/g, '/');
   
   try {
     // read all knowledge files
@@ -31,9 +33,9 @@ function queryKnowledge(filePath, options = {}) {
 
     // find target file info
     const fileInfo = {
-      symbols: fileSymbols[filePath] || {},
-      imports: fileImports[filePath] || {},
-      references: symbolRefs[filePath] || {}
+      symbols: fileSymbols[normalizedPath] || {},
+      imports: fileImports[normalizedPath] || {},
+      references: symbolRefs[normalizedPath] || {}
     };
 
     // format output
@@ -70,13 +72,15 @@ async function generateKnowledge() {
   
   const files = await glob('**/*.{js,jsx,ts,tsx}', {
     ignore: ['node_modules/**', 'dist/**', '.knowledge/**'],
-    cwd
+    cwd,
+    windowsPathsNoEscape: true
   });
 
   for (const file of files) {
     const filePath = path.join(cwd, file);
+    const normalizedPath = normalize(filePath).replace(/\\/g, '/');
     try {
-      parser.parseFile(filePath);
+      parser.parseFile(normalizedPath);
     } catch (error) {
       console.error(`Error parsing ${file}:`, error);
     }
