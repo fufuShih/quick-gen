@@ -4,6 +4,7 @@ const glob = require('glob');
 const babel = require('@babel/core');
 const generator = require('@babel/generator').default;
 const parser = require('@babel/parser');
+const { normalize } = require('path');
 
 const propsCache = new Map();
 const processedComponents = new Set(); // Track processed components
@@ -272,7 +273,8 @@ async function generateDocs(directory) {
     console.log('🔍 Scanning directory:', directory);
     const files = glob.sync('**/*.{js,jsx}', { 
       cwd: directory,
-      absolute: true
+      absolute: true,
+      windowsPathsNoEscape: true
     });
     
     if (files.length === 0) {
@@ -287,7 +289,7 @@ async function generateDocs(directory) {
     let skippedCount = 0;
     
     for (const file of files) {
-      const absolutePath = path.resolve(file);
+      const absolutePath = normalize(path.resolve(file)).replace(/\\/g, '/');
       let code = fs.readFileSync(file, 'utf-8');
       
       try {

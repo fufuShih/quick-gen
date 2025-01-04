@@ -2,6 +2,8 @@
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const { generateDocs } = require('../src/index');
+const path = require('path');
+const { normalize } = require('path');
 
 yargs(hideBin(process.argv))
   .command('$0', 'Generate JSDoc for React components', (yargs) => {
@@ -10,7 +12,8 @@ yargs(hideBin(process.argv))
         alias: 'd',
         type: 'string',
         description: 'Directory to scan for React components',
-        default: 'src'
+        default: 'src',
+        coerce: (dir) => normalize(dir)
       });
   }, (argv) => {
     try {
