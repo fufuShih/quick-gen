@@ -1,5 +1,14 @@
 # @quick-gen/cli
 
+## 0.1.13
+
+### Patch Changes
+
+- Update the folder path problem
+- Updated dependencies
+  - @quick-gen/knowledge@0.1.13
+  - @quick-gen/react@0.1.13
+
 ## 0.1.12
 
 ### Patch Changes
