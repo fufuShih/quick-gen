@@ -4,84 +4,9 @@ const glob = require('glob');
 const babel = require('@babel/core');
 const generator = require('@babel/generator').default;
 const parser = require('@babel/parser');
-const { normalize } = require('path');
 
 const propsCache = new Map();
 const processedComponents = new Set(); // Track processed components
-
-function hasLeadingJsDoc(path) {
-  const leading = path.node.leadingComments;
-  if (!leading || leading.length === 0) return false;
-  // Check for any JSDoc-style comment, not just @component
-  return leading.some(comment => 
-    comment.type === 'CommentBlock' && 
-    (comment.value.startsWith('*') || /\s*@\w+/.test(comment.value))
-  );
-}
-
-function analyzeComponent(path, componentInfo) {
-  // Get the props parameter name if it exists
-  let propsIdentifier = null;
-  if (path.node.params && path.node.params[0]) {
-    const firstParam = path.node.params[0];
-    if (firstParam.type === 'Identifier') {
-      propsIdentifier = firstParam.name;
-    }
-  }
-
-  // Analyze props from parameters
-  if (path.node.params && path.node.params[0]) {
-    const firstParam = path.node.params[0];
-    if (firstParam.type === 'Identifier') {
-      // Find destructuring assignment
-      path.traverse({
-        VariableDeclarator(path) {
-          const init = path.node.init;
-          if (init && init.name === firstParam.name) {
-            const id = path.node.id;
-            if (id.type === 'ObjectPattern') {
-              id.properties.forEach(prop => {
-                if (prop.type === 'ObjectProperty') {
-                  componentInfo.props.add(prop.key.name);
-                } else if (prop.type === 'RestElement') {
-                  componentInfo.hasSpreadProps = true;
-                  componentInfo.props.add('...' + prop.argument.name);
-                }
-              });
-            }
-          }
-        }
-      });
-    }
-    if (firstParam.type === 'ObjectPattern') {
-      firstParam.properties.forEach(prop => {
-        if (prop.type === 'ObjectProperty') {
-          componentInfo.props.add(prop.key.name);
-        } else if (prop.type === 'RestElement') {
-          componentInfo.hasSpreadProps = true;
-          componentInfo.props.add('...' + prop.argument.name);
-        }
-      });
-    }
-  }
-
-  // Update props usage analysis to use the identified props parameter name
-  path.traverse({
-    MemberExpression(path) {
-      if (propsIdentifier && path.node.object.name === propsIdentifier) {
-        componentInfo.props.add(path.node.property.name);
-      }
-    },
-    SpreadElement(path) {
-      if (path.node.argument.name === 'props') {
-        componentInfo.hasSpreadProps = true;
-      }
-    }
-  });
-
-  console.log('Analyzing component:', componentInfo.name);
-  console.log('Found props:', Array.from(componentInfo.props));
-}
 
 const reactJsDocPlugin = {
   visitor: {
@@ -139,21 +64,25 @@ const reactJsDocPlugin = {
       if (parent.node.type === 'VariableDeclarator' || parent.node.type === 'CallExpression') {
         const filename = path.hub.file.opts.filename;
         let componentName;
-        
-        // Get component name from various parent types
         if (parent.node.type === 'VariableDeclarator') {
           componentName = parent.node.id.name;
         } else if (parent.node.type === 'CallExpression' && parent.parentPath.node.type === 'VariableDeclarator') {
           componentName = parent.parentPath.node.id.name;
         }
 
-        // Skip if already processed or has JSDoc
+        // Check if component already processed
         const componentKey = `${filename}:${componentName}`;
-        if (processedComponents.has(componentKey)) return;
-        if (hasLeadingJsDoc(parent)) return;
+        if (processedComponents.has(componentKey)) {
+          return;
+        }
 
-        // Verify it's actually a React component
-        if (!isReactComponent(path.node)) return;
+        // Skip if component already has JSDoc
+        const leadingComments = parent.node.leadingComments || 
+                              (parent.parentPath && parent.parentPath.node.leadingComments);
+        if (leadingComments && leadingComments.some(comment => 
+          comment.type === 'CommentBlock' && comment.value.includes('@component'))) {
+          return;
+        }
 
         const componentInfo = {
           name: componentName,
@@ -183,38 +112,6 @@ const reactJsDocPlugin = {
           // Mark component as processed
           processedComponents.add(componentKey);
         }
-      }
-    },
-    ExportDefaultDeclaration(path) {
-      const filename = path.hub.file.opts.filename;
-      const declaration = path.node.declaration;
-
-      // Handle unnamed default exports
-      if (declaration.type === 'ArrowFunctionExpression' || 
-          declaration.type === 'FunctionDeclaration') {
-        
-        // Skip if has JSDoc
-        if (hasLeadingJsDoc(path)) return;
-
-        // Verify it's a React component
-        if (!isReactComponent(declaration)) return;
-
-        const componentName = 'DefaultComponent';
-        const componentKey = `${filename}:${componentName}`;
-        if (processedComponents.has(componentKey)) return;
-
-        const componentInfo = {
-          name: componentName,
-          props: new Set(),
-          hasSpreadProps: false,
-          lineNumber: path.node.loc.start.line,
-          modified: true,
-          componentName
-        };
-
-        analyzeComponent(path.get('declaration'), componentInfo);
-        
-        // ... rest of component processing ...
       }
     }
   }
@@ -278,6 +175,61 @@ function isReactComponent(node) {
   return false;
 }
 
+function analyzeComponent(path, componentInfo) {
+  // Analyze props from parameters
+  if (path.node.params && path.node.params[0]) {
+    const firstParam = path.node.params[0];
+    if (firstParam.type === 'Identifier') {
+      // 尋找解構賦值
+      path.traverse({
+        VariableDeclarator(path) {
+          const init = path.node.init;
+          if (init && init.name === firstParam.name) {
+            const id = path.node.id;
+            if (id.type === 'ObjectPattern') {
+              id.properties.forEach(prop => {
+                if (prop.type === 'ObjectProperty') {
+                  componentInfo.props.add(prop.key.name);
+                } else if (prop.type === 'RestElement') {
+                  componentInfo.hasSpreadProps = true;
+                  componentInfo.props.add('...' + prop.argument.name);
+                }
+              });
+            }
+          }
+        }
+      });
+    }
+    if (firstParam.type === 'ObjectPattern') {
+      firstParam.properties.forEach(prop => {
+        if (prop.type === 'ObjectProperty') {
+          componentInfo.props.add(prop.key.name);
+        } else if (prop.type === 'RestElement') {
+          componentInfo.hasSpreadProps = true;
+          componentInfo.props.add('...' + prop.argument.name);
+        }
+      });
+    }
+  }
+
+  // Analyze props usage in the component body
+  path.traverse({
+    MemberExpression(path) {
+      if (path.node.object.name === 'props') {
+        componentInfo.props.add(path.node.property.name);
+      }
+    },
+    SpreadElement(path) {
+      if (path.node.argument.name === 'props') {
+        componentInfo.hasSpreadProps = true;
+      }
+    }
+  });
+
+  console.log('Analyzing component:', componentInfo.name);
+  console.log('Found props:', Array.from(componentInfo.props));
+}
+
 function generateJsDoc(componentName, props, hasSpreadProps) {
   let doc = '';
   doc += `/**\n`;
@@ -320,8 +272,7 @@ async function generateDocs(directory) {
     console.log('🔍 Scanning directory:', directory);
     const files = glob.sync('**/*.{js,jsx}', { 
       cwd: directory,
-      absolute: true,
-      windowsPathsNoEscape: true
+      absolute: true
     });
     
     if (files.length === 0) {
@@ -336,7 +287,7 @@ async function generateDocs(directory) {
     let skippedCount = 0;
     
     for (const file of files) {
-      const absolutePath = normalize(path.resolve(file)).replace(/\\/g, '/');
+      const absolutePath = path.resolve(file);
       let code = fs.readFileSync(file, 'utf-8');
       
       try {
@@ -398,6 +349,5 @@ async function generateDocs(directory) {
 
 module.exports = {
   generateDocs,
-  reactJsDocPlugin,
-  generateReactDocs: generateDocs
+  reactJsDocPlugin
 };
