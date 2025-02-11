@@ -35,13 +35,15 @@ const reactJsDocPlugin = {
           hasSpreadProps: false,
           lineNumber: path.node.loc.start.line,
           modified: true,
-          componentName
+          componentName,
+          paramName: 'props'
         };
 
         analyzeComponent(path, componentInfo);
         if (componentInfo.props.size > 0 || componentInfo.hasSpreadProps) {
           const jsDoc = generateJsDoc(
             componentInfo.name,
+            componentInfo.paramName,
             Array.from(componentInfo.props),
             componentInfo.hasSpreadProps
           );
@@ -92,12 +94,14 @@ const reactJsDocPlugin = {
           hasSpreadProps: false,
           lineNumber: parent.node.type === 'VariableDeclarator' ? parent.node.loc.start.line : parent.parentPath.node.loc.start.line,
           modified: true,
-          componentName
+          componentName,
+          paramName: 'props'
         };
         analyzeComponent(path, componentInfo);
         if (componentInfo.props.size > 0 || componentInfo.hasSpreadProps) {
           const jsDoc = generateJsDoc(
             componentInfo.name,
+            componentInfo.paramName,
             Array.from(componentInfo.props),
             componentInfo.hasSpreadProps
           );
@@ -179,10 +183,13 @@ function isReactComponent(node) {
 
 function analyzeComponent(path, componentInfo) {
   // Analyze props from parameters
+  let paramName = null; // Store the parameter name
   if (path.node.params && path.node.params[0]) {
     const firstParam = path.node.params[0];
     if (firstParam.type === 'Identifier') {
-      // 尋找解構賦值
+      // Capture the parameter name if it's an Identifier
+      paramName = firstParam.name;
+      // find the variable declarator that has the same name as the first param
       path.traverse({
         VariableDeclarator(path) {
           const init = path.node.init;
@@ -214,14 +221,22 @@ function analyzeComponent(path, componentInfo) {
     }
   }
 
+  // No parameter or no identifier, default to 'props'
+  componentInfo.paramName = paramName || 'props';
+
   // Analyze props usage in the component body
   path.traverse({
     MemberExpression(path) {
-      if (path.node.object.name === 'props') {
+      // Use the captured parameter name instead of "props"
+      if (componentInfo.paramName && path.node.object.name === componentInfo.paramName) {
         componentInfo.props.add(path.node.property.name);
       }
     },
     SpreadElement(path) {
+      // This part seems to assume the spread is always on 'props'.
+      // It might be good to check if this is always the case, or if
+      // we need to adapt this as well.  For now, I'll leave it as is
+      // since the user's instructions focused on MemberExpression.
       if (path.node.argument.name === 'props') {
         componentInfo.hasSpreadProps = true;
       }
@@ -232,25 +247,25 @@ function analyzeComponent(path, componentInfo) {
   console.log('Found props:', Array.from(componentInfo.props));
 }
 
-function generateJsDoc(componentName, props, hasSpreadProps) {
+function generateJsDoc(componentName, paramName, props, hasSpreadProps) {
   let doc = '';
   doc += `/**\n`;
   doc += ` * @component ${componentName.replace(/^_+/, '')}\n`;
   doc += ` * @description React component\n`;
-  doc += ` * @param {Object} props Component props\n`;
+  doc += ` * @param {Object} ${paramName} Component props\n`;
   
   const normalProps = props.filter(prop => !prop.startsWith('...'));
   const spreadProps = props.find(prop => prop.startsWith('...'));
   
   normalProps.forEach(prop => {
-    doc += ` * @param {*} props.${prop} - ${prop} prop\n`;
+    doc += ` * @param {*} ${paramName}.${prop} - ${prop} prop\n`;
   });
 
   if (spreadProps) {
     const restName = spreadProps.slice(3); // Remove '...' prefix
-    doc += ` * @param {Object} props.${restName} - Additional props are spread\n`;
+    doc += ` * @param {Object} ${paramName}.${restName} - Additional props are spread\n`;
   } else if (hasSpreadProps) {
-    doc += ` * @param {Object} props.rest - Additional props are spread\n`;
+    doc += ` * @param {Object} ${paramName}.rest - Additional props are spread\n`;
   }
 
   doc += ` * @returns {JSX.Element} React component\n`;

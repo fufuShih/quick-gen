@@ -57,6 +57,11 @@ describe('generateDocs', () => {
       file: 'ComponentWithFunction.jsx',
       description: 'Component with a nested function, which should not get JSDoc'
     },
+    {
+      name: 'component with custom parameter name',
+      file: 'ComponentParameterName.jsx',
+      description: 'Component with a parameter name different from "props"'
+    },
   ];
 
   testCases.forEach(({ name, file, description }) => {
