@@ -40,26 +40,24 @@ const reactJsDocPlugin = {
         };
 
         analyzeComponent(path, componentInfo);
-        if (componentInfo.props.size > 0 || componentInfo.hasSpreadProps) {
-          const jsDoc = generateJsDoc(
-            componentInfo.name,
-            componentInfo.paramName,
-            Array.from(componentInfo.props),
-            componentInfo.hasSpreadProps
-          );
+        const jsDoc = generateJsDoc(
+          componentInfo.name,
+          componentInfo.paramName,
+          Array.from(componentInfo.props),
+          componentInfo.hasSpreadProps
+        );
 
-          // Initialize components array if not exists
-          if (!propsCache.has(filename)) {
-            propsCache.set(filename, []);
-          }
-          propsCache.get(filename).push({
-            ...componentInfo,
-            jsDoc
-          });
-          
-          // Mark component as processed
-          processedComponents.add(componentKey);
+        // Initialize components array if not exists
+        if (!propsCache.has(filename)) {
+          propsCache.set(filename, []);
         }
+        propsCache.get(filename).push({
+          ...componentInfo,
+          jsDoc
+        });
+        
+        // Mark component as processed
+        processedComponents.add(componentKey);
       }
     },
     ArrowFunctionExpression(path) {
@@ -98,26 +96,82 @@ const reactJsDocPlugin = {
           paramName: 'props'
         };
         analyzeComponent(path, componentInfo);
-        if (componentInfo.props.size > 0 || componentInfo.hasSpreadProps) {
-          const jsDoc = generateJsDoc(
-            componentInfo.name,
-            componentInfo.paramName,
-            Array.from(componentInfo.props),
-            componentInfo.hasSpreadProps
-          );
+        const jsDoc = generateJsDoc(
+          componentInfo.name,
+          componentInfo.paramName,
+          Array.from(componentInfo.props),
+          componentInfo.hasSpreadProps
+        );
 
-          // Initialize components array if not exists
-          if (!propsCache.has(filename)) {
-            propsCache.set(filename, []);
-          }
-          propsCache.get(filename).push({
-            ...componentInfo,
-            jsDoc
-          });
-          
-          // Mark component as processed
-          processedComponents.add(componentKey);
+        // Initialize components array if not exists
+        if (!propsCache.has(filename)) {
+          propsCache.set(filename, []);
         }
+        propsCache.get(filename).push({
+          ...componentInfo,
+          jsDoc
+        });
+        
+        // Mark component as processed
+        processedComponents.add(componentKey);
+      }
+    },
+    ExportDefaultDeclaration(path) {
+      const decl = path.node.declaration;
+      if (
+        decl.type === 'ArrowFunctionExpression' ||
+        decl.type === 'FunctionDeclaration' ||
+        decl.type === 'FunctionExpression'
+      ) {
+        // Check if it's a React Component
+        if (!isReactComponent(decl)) return;
+
+        // Assign default name if anonymous, otherwise use existing name
+        const componentName = decl.id ? decl.id.name : 'DefaultExportComponent';
+
+        // Check if component already processed
+        const filename = path.hub.file.opts.filename;
+        const componentKey = `${filename}:${componentName}`;
+        if (processedComponents.has(componentKey)) {
+          return;
+        }
+
+        // Check if JSDoc already exists
+        const leadingComments = path.node.leadingComments;
+        if (leadingComments && leadingComments.some(comment =>
+          comment.type === 'CommentBlock' && comment.value.includes('@component')
+        )) {
+          return;
+        }
+
+        // Create componentInfo
+        const componentInfo = {
+          name: componentName,
+          props: new Set(),
+          hasSpreadProps: false,
+          lineNumber: path.node.loc.start.line,
+          modified: true,
+          componentName,
+          paramName: 'props' // Add paramName
+        };
+
+        analyzeComponent(path.get('declaration'), componentInfo);
+
+        const jsDoc = generateJsDoc(
+          componentInfo.name,
+          componentInfo.paramName, // Pass paramName
+          Array.from(componentInfo.props),
+          componentInfo.hasSpreadProps
+        );
+
+        if (!propsCache.has(filename)) {
+          propsCache.set(filename, []);
+        }
+        propsCache.get(filename).push({
+          ...componentInfo,
+          jsDoc
+        });
+        processedComponents.add(componentKey);
       }
     }
   }

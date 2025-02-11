@@ -62,6 +62,11 @@ describe('generateDocs', () => {
       file: 'ComponentParameterName.jsx',
       description: 'Component with a parameter name different from "props"'
     },
+    {
+      name: 'anonymous export default component',
+      file: 'ComponentWithAnoymous.jsx',
+      description: 'Component with an anonymous export default function'
+    },
   ];
 
   testCases.forEach(({ name, file, description }) => {
