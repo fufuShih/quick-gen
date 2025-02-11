@@ -1,5 +1,11 @@
 # @quick-gen/react
 
+## 0.2.0
+
+### Minor Changes
+
+- Add the more case to check
+
 ## 0.1.14
 
 ### Patch Changes
