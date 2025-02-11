@@ -18,11 +18,11 @@ importers:
   packages/cli:
     dependencies:
       '@quick-gen/knowledge':
-        specifier: ^0.1.12
-        version: 0.1.12
+        specifier: ^0.1.13
+        version: 0.1.13
       '@quick-gen/react':
-        specifier: ^0.1.12
-        version: 0.1.12
+        specifier: ^0.1.13
+        version: 0.1.13
       yargs:
         specifier: ^17.7.2
         version: 17.7.2
@@ -875,12 +875,12 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@quick-gen/knowledge@0.1.12':
-    resolution: {integrity: sha512-+1/HZGYWAnQxIRbJ2a7tFrr3DFiXemOT/h6mLikvyJFtMJuqxAdK9HhkuWhFNbIoSsoqn2oA6SinbZq9jJFpkQ==}
+  '@quick-gen/knowledge@0.1.13':
+    resolution: {integrity: sha512-oiyk3tKqt4RzlaSYvtqWFvHx2qEWdzho2sHgGnaKxcyR8GvEE7Meka+ihMMnc4kIYYPnyKNJQUvf3TPyH9Xr8g==}
     hasBin: true
 
-  '@quick-gen/react@0.1.12':
-    resolution: {integrity: sha512-9d1KoI0DB4rv9leqteha91hQ2GrWFiujJIPjhQMj56G5oITHFiIfa9/3EtXSEks99gZy09ZT96AQpdN17cFiXA==}
+  '@quick-gen/react@0.1.13':
+    resolution: {integrity: sha512-Zvoxmp/b/TUSd6Wa6qoGMBqzIjSChmy6aFsDdr6RA59l6EvhFrkXkozECWUdO0DJZM+PKDK18OhIUiN7+XQohw==}
     hasBin: true
 
   '@sinclair/typebox@0.27.8':
@@ -3178,7 +3178,7 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@quick-gen/knowledge@0.1.12':
+  '@quick-gen/knowledge@0.1.13':
     dependencies:
       '@babel/parser': 7.26.3
       '@babel/traverse': 7.26.4
@@ -3189,7 +3189,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@quick-gen/react@0.1.12':
+  '@quick-gen/react@0.1.13':
     dependencies:
       '@babel/core': 7.26.0
       '@babel/parser': 7.26.3
