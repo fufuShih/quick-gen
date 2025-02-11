@@ -11,6 +11,7 @@ const processedComponents = new Set(); // Track processed components
 const reactJsDocPlugin = {
   visitor: {
     FunctionDeclaration(path) {
+      if (!isReactComponent(path.node)) return;
       if (path.node.id) {
         const filename = path.hub.file.opts.filename;
         const componentName = path.node.id.name;
@@ -60,6 +61,7 @@ const reactJsDocPlugin = {
       }
     },
     ArrowFunctionExpression(path) {
+      if (!isReactComponent(path.node)) return;
       const parent = path.parentPath;
       if (parent.node.type === 'VariableDeclarator' || parent.node.type === 'CallExpression') {
         const filename = path.hub.file.opts.filename;
