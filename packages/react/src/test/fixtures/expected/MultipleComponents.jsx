@@ -1,6 +1,6 @@
 // This component doesn't have JSDoc yet
 /**
- * @generated
+ * @generated 1700000000000
  * @component HeaderButton
  *
  * @param {Object} props Component props
@@ -18,7 +18,7 @@ const HeaderButton = ({ onClick, text }) => {
 
 // This component doesn't have JSDoc yet
 /**
- * @generated
+ * @generated 1700000000000
  * @component ContentButton
  *
  * @param {Object} props Component props
@@ -57,7 +57,7 @@ const FooterButton = ({ onClick, label, disabled }) => {
 
 // This component doesn't have JSDoc yet
 /**
- * @generated
+ * @generated 1700000000000
  * @component SidebarButton
  *
  * @param {Object} props Component props

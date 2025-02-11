@@ -24,6 +24,12 @@ describe('generateDocs', () => {
     for (const [file, content] of originalContents) {
       fs.writeFileSync(path.join(componentsDir, file), content);
     }
+    jest.restoreAllMocks(); // Restore all mocks after each test
+  });
+
+  // Before each test, mock Date.now
+  beforeEach(() => {
+    jest.spyOn(Date, 'now').mockReturnValue(1700000000000); // Mock Date.now()
   });
 
   const testCases = [

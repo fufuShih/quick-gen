@@ -1,5 +1,5 @@
 /**
- * @generated
+ * @generated 1700000000000
  * @component DataComponent
  *
  * @param {Object} data Component props

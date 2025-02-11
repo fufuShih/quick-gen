@@ -304,7 +304,7 @@ function analyzeComponent(path, componentInfo) {
 function generateJsDoc(componentName, paramName, props, hasSpreadProps) {
   let doc = '';
   doc += `/**\n`;
-  doc += ` * @generated\n`;
+  doc += ` * @generated ${Date.now()}\n`;
   doc += ` * @component ${componentName.replace(/^_+/, '')}\n`;
   doc += ` *\n`;
   doc += ` * @param {Object} ${paramName} Component props\n`;
