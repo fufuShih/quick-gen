@@ -51,7 +51,12 @@ describe('generateDocs', () => {
       name: 'memo component',
       file: 'MemoButton.jsx',
       description: 'React memo component'
-    }
+    },
+    {
+      name: 'component with function',
+      file: 'ComponentWithFunction.jsx',
+      description: 'Component with a nested function, which should not get JSDoc'
+    },
   ];
 
   testCases.forEach(({ name, file, description }) => {
