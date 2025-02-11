@@ -1,6 +1,7 @@
 /**
+ * @generated
  * @component ButtonWithJSDoc
- * @description React component
+ *
  * @param {Object} props Component props
  * @param {*} props.onClick - onClick prop
  * @param {*} props.children - children prop

@@ -304,8 +304,9 @@ function analyzeComponent(path, componentInfo) {
 function generateJsDoc(componentName, paramName, props, hasSpreadProps) {
   let doc = '';
   doc += `/**\n`;
+  doc += ` * @generated\n`;
   doc += ` * @component ${componentName.replace(/^_+/, '')}\n`;
-  doc += ` * @description React component\n`;
+  doc += ` *\n`;
   doc += ` * @param {Object} ${paramName} Component props\n`;
   
   const normalProps = props.filter(prop => !prop.startsWith('...'));

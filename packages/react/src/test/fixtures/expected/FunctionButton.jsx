@@ -1,6 +1,7 @@
 /**
+ * @generated
  * @component FunctionButton
- * @description React component
+ *
  * @param {Object} props Component props
  * @param {*} props.type - type prop
  * @param {*} props.onClick - onClick prop

@@ -1,6 +1,7 @@
 /**
+ * @generated
  * @component DataComponent
- * @description React component
+ *
  * @param {Object} data Component props
  * @param {*} data.title - title prop
  * @returns {JSX.Element} React component
