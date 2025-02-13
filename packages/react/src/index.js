@@ -218,13 +218,83 @@ const reactJsDocPlugin = {
 };
 
 /**
+ * 檢查一個 block 裡是否有 return JSX
+ * @param {import('@babel/core').types.Statement[]} statements
+ * @param {Function} containsJSX
+ * @param {Function} isWrappedComponent
+ * @returns {boolean}
+ */
+function hasReturnStatementWithJSX(statements, containsJSX, isWrappedComponent) {
+  for (const st of statements) {
+    // 1) 直接碰到 return
+    if (
+      st.type === 'ReturnStatement' &&
+      st.argument &&
+      (containsJSX(st.argument) || isWrappedComponent(st.argument))
+    ) {
+      return true;
+    }
+
+    // 2) 如果是 if-statement，需要再深入 .consequent 或 .alternate
+    if (st.type === 'IfStatement') {
+      // if 的區塊
+      if (
+        st.consequent?.type === 'BlockStatement' &&
+        hasReturnStatementWithJSX(st.consequent.body, containsJSX, isWrappedComponent)
+      ) {
+        return true;
+      }
+      // else 區塊
+      if (st.alternate) {
+        if (
+          st.alternate.type === 'BlockStatement' &&
+          hasReturnStatementWithJSX(st.alternate.body, containsJSX, isWrappedComponent)
+        ) {
+          return true;
+        }
+        // 有時 alternate 也是一個 if-statement（if-else if-else if...）
+        if (
+          st.alternate.type === 'IfStatement' &&
+          hasReturnStatementWithJSX([st.alternate], containsJSX, isWrappedComponent)
+        ) {
+          return true;
+        }
+      }
+    }
+
+    // 3) 其他像是 for, while, switch ... 您可視需求遞迴
+    if (st.type === 'ForStatement' || st.type === 'WhileStatement') {
+      if (
+        st.body?.type === 'BlockStatement' &&
+        hasReturnStatementWithJSX(st.body.body, containsJSX, isWrappedComponent)
+      ) {
+        return true;
+      }
+    }
+
+    if (st.type === 'SwitchStatement') {
+      for (const cs of st.cases) {
+        if (
+          cs.consequent &&
+          hasReturnStatementWithJSX(cs.consequent, containsJSX, isWrappedComponent)
+        ) {
+          return true;
+        }
+      }
+    }
+
+  }
+  return false;
+}
+
+/**
  * @param {import('@babel/core').Node} node
  * @returns {boolean}
  */
 function containsJSX(node) {
   if (!node) return false;
 
-  // isJSX 相當於檢查是否是 'JSXElement' | 'JSXFragment' | 'JSXText'
+  // check whether the node is 'JSXElement' | 'JSXFragment' | 'JSXText'
   const isJSX = (type) => {
     return type === 'JSXElement' || 
            type === 'JSXFragment' || 
@@ -261,19 +331,20 @@ function containsJSX(node) {
 }
 
 /**
+ * detect whether the node is React component
  * @param {import('@babel/core').Node} node
- * @returns {boolean}
  */
 function isReactComponent(node) {
   if (!node) return false;
 
-  // Check if it's wrapped in memo or other HOCs
+  // Keep the original "wrapped component" check...
   const isWrappedComponent = (node) => {
     if (node.type === 'CallExpression') {
       const callee = node.callee;
-      // Check for memo(Component) pattern
-      if (callee.type === 'Identifier' && 
-          (callee.name === 'memo' || callee.name === 'forwardRef')) {
+      if (
+        callee.type === 'Identifier' &&
+        (callee.name === 'memo' || callee.name === 'forwardRef')
+      ) {
         const args = node.arguments;
         return args.length > 0 && isReactComponent(args[0]);
       }
@@ -281,35 +352,35 @@ function isReactComponent(node) {
     return false;
   };
 
-  // For arrow functions and function expressions
-  if (node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression') {
+  // ArrowFunction / FunctionExpression
+  if (
+    node.type === 'ArrowFunctionExpression' ||
+    node.type === 'FunctionExpression'
+  ) {
+    // check whether the body contains JSX
     if (containsJSX(node.body)) {
       return true;
     }
-    // Block with return statement
+    // if body is a block statement, need to scan the whole block
     if (node.body?.type === 'BlockStatement') {
-      return node.body.body.some(statement =>
-        statement.type === 'ReturnStatement' &&
-        statement.argument &&
-        (containsJSX(statement.argument) || isWrappedComponent(statement.argument))
-      );
+      return hasReturnStatementWithJSX(node.body.body, containsJSX, isWrappedComponent);
     }
   }
 
-  // For function declarations
+  // FunctionDeclaration
   if (node.type === 'FunctionDeclaration') {
-    return node.body.body.some(statement =>
-      statement.type === 'ReturnStatement' &&
-      statement.argument &&
-      (containsJSX(statement.argument) || isWrappedComponent(statement.argument))
-    );
+    if (node.body && node.body.type === 'BlockStatement') {
+      // scan the whole block
+      return hasReturnStatementWithJSX(node.body.body, containsJSX, isWrappedComponent);
+    }
   }
 
-  // For wrapped components (memo, forwardRef, etc.)
+  // 3) if wrapped in memo(...)、forwardRef(...)
   if (isWrappedComponent(node)) {
     return true;
   }
 
+  // default is not a React component
   return false;
 }
 
