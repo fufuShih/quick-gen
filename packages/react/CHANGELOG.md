@@ -1,10 +1,16 @@
 # @quick-gen/react
 
+## 0.2.2
+
+### Patch Changes
+
+- modify some format
+
 ## 0.2.1
 
 ### Patch Changes
 
-- add generated tag and timestamp 
+- add generated tag and timestamp
 - remove the description
 
 ## 0.2.0
