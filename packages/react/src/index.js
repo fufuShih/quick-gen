@@ -2,8 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
 const babel = require('@babel/core');
-const generator = require('@babel/generator').default;
-const parser = require('@babel/parser');
 
 const propsCache = new Map();
 const processedComponents = new Set(); // Track processed components
@@ -327,12 +325,6 @@ function generateJsDoc(componentName, paramName, props, hasSpreadProps) {
   doc += ` */`;
   
   return doc;
-}
-
-function hasComponentJSDoc(code) {
-  // Check if there's already a JSDoc comment with @component
-  const jsDocRegex = /\/\*\*[\s\S]*?@component[\s\S]*?\*\//;
-  return jsDocRegex.test(code);
 }
 
 async function generateDocs(directory) {
