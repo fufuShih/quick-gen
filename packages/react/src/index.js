@@ -267,13 +267,6 @@ function containsJSX(node) {
 function isReactComponent(node) {
   if (!node) return false;
 
-  // Improved JSX detection
-  // const isJSX = (type) => { // Removed isJSX, as it is now within containsJSX
-  //   return type === 'JSXElement' || 
-  //          type === 'JSXFragment' || 
-  //          type === 'JSXText';
-  // };
-
   // Check if it's wrapped in memo or other HOCs
   const isWrappedComponent = (node) => {
     if (node.type === 'CallExpression') {
@@ -290,10 +283,6 @@ function isReactComponent(node) {
 
   // For arrow functions and function expressions
   if (node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression') {
-    // Direct JSX return
-    // if (isJSX(node.body?.type)) { // Replaced with containsJSX
-    //   return true;
-    // }
     if (containsJSX(node.body)) {
       return true;
     }
