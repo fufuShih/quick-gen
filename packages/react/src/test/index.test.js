@@ -78,6 +78,11 @@ describe('generateDocs', () => {
       file: 'ComponentWithConditional.jsx',
       description: 'Component with conditional rendering'
     },
+    {
+      name: 'component with conditional rendering',
+      file: 'ComponentWithConditional2.jsx',
+      description: 'Component with conditional rendering'
+    },
   ];
 
   testCases.forEach(({ name, file, description }) => {
