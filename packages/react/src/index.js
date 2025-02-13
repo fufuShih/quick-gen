@@ -292,10 +292,10 @@ function analyzeComponent(path, componentInfo) {
       paramName = firstParam.name;
       // find the variable declarator that has the same name as the first param
       path.traverse({
-        VariableDeclarator(path) {
-          const init = path.node.init;
+        VariableDeclarator(childPath) {
+          const init = childPath.node.init;
           if (init && init.name === firstParam.name) {
-            const id = path.node.id;
+            const id = childPath.node.id;
             if (id.type === 'ObjectPattern') {
               id.properties.forEach(prop => {
                 if (prop.type === 'ObjectProperty') {
