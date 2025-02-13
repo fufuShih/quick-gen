@@ -3,10 +3,10 @@
  * @component Button3
  *
  * @param {Object} props Component props
- * @param {*} props.onClick - onClick prop
- * @param {*} props.children - children prop
- * @param {*} props.disabled - disabled prop
- * @param {Object} props.props - Additional props are spread
+ * @param {*} props.onClick - [auto generate]
+ * @param {*} props.children - [auto generate]
+ * @param {*} props.disabled - [auto generate]
+ * @param {Object} props.props - [auto generate]
  * @returns {JSX.Element} React component
  */
 const Button3 = ({ onClick, children, disabled, ...props }) => {

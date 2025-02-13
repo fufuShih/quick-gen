@@ -3,9 +3,9 @@
  * @component Button
  *
  * @param {Object} props Component props
- * @param {*} props.onClick - onClick prop
- * @param {*} props.children - children prop
- * @param {*} props.disabled - disabled prop
+ * @param {*} props.onClick - [auto generate]
+ * @param {*} props.children - [auto generate]
+ * @param {*} props.disabled - [auto generate]
  * @returns {JSX.Element} React component
  */
 export const Button = ({ onClick, children, disabled }) => {

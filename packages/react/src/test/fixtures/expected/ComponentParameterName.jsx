@@ -3,7 +3,7 @@
  * @component DataComponent
  *
  * @param {Object} data Component props
- * @param {*} data.title - title prop
+ * @param {*} data.title - [auto generate]
  * @returns {JSX.Element} React component
  */
 const DataComponent = (data) => {

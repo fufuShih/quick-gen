@@ -4,8 +4,8 @@
  * @component HeaderButton
  *
  * @param {Object} props Component props
- * @param {*} props.onClick - onClick prop
- * @param {*} props.text - text prop
+ * @param {*} props.onClick - [auto generate]
+ * @param {*} props.text - [auto generate]
  * @returns {JSX.Element} React component
  */
 const HeaderButton = ({ onClick, text }) => {
@@ -22,8 +22,8 @@ const HeaderButton = ({ onClick, text }) => {
  * @component ContentButton
  *
  * @param {Object} props Component props
- * @param {*} props.onClick - onClick prop
- * @param {*} props.children - children prop
+ * @param {*} props.onClick - [auto generate]
+ * @param {*} props.children - [auto generate]
  * @returns {JSX.Element} React component
  */
 const ContentButton = ({ onClick, children }) => {
@@ -61,9 +61,9 @@ const FooterButton = ({ onClick, label, disabled }) => {
  * @component SidebarButton
  *
  * @param {Object} props Component props
- * @param {*} props.onClick - onClick prop
- * @param {*} props.icon - icon prop
- * @param {*} props.text - text prop
+ * @param {*} props.onClick - [auto generate]
+ * @param {*} props.icon - [auto generate]
+ * @param {*} props.text - [auto generate]
  * @returns {JSX.Element} React component
  */
 const SidebarButton = (props) => {

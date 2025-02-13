@@ -5,8 +5,8 @@ import { memo } from 'react';
  * @component MemoButton
  *
  * @param {Object} props Component props
- * @param {*} props.onClick - onClick prop
- * @param {*} props.label - label prop
+ * @param {*} props.onClick - [auto generate]
+ * @param {*} props.label - [auto generate]
  * @returns {JSX.Element} React component
  */
 const MemoButton = memo(({ onClick, label }) => {

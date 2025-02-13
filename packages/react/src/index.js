@@ -338,14 +338,14 @@ function generateJsDoc(componentName, paramName, props, hasSpreadProps) {
   const spreadProps = props.find(prop => prop.startsWith('...'));
   
   normalProps.forEach(prop => {
-    doc += ` * @param {*} ${paramName}.${prop} - ${prop} prop\n`;
+    doc += ` * @param {*} ${paramName}.${prop} - [auto generate]\n`;
   });
 
   if (spreadProps) {
     const restName = spreadProps.slice(3); // Remove '...' prefix
-    doc += ` * @param {Object} ${paramName}.${restName} - Additional props are spread\n`;
+    doc += ` * @param {Object} ${paramName}.${restName} - [auto generate]\n`;
   } else if (hasSpreadProps) {
-    doc += ` * @param {Object} ${paramName}.rest - Additional props are spread\n`;
+    doc += ` * @param {Object} ${paramName}.rest - [auto generate]\n`;
   }
 
   doc += ` * @returns {JSX.Element} React component\n`;

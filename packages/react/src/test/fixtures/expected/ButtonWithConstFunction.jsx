@@ -3,10 +3,10 @@
  * @component ButtonWithConstFunction
  *
  * @param {Object} props Component props
- * @param {*} props.onClick - onClick prop
- * @param {*} props.children - children prop
- * @param {*} props.disabled - disabled prop
- * @param {Object} props.rest - Additional props are spread
+ * @param {*} props.onClick - [auto generate]
+ * @param {*} props.children - [auto generate]
+ * @param {*} props.disabled - [auto generate]
+ * @param {Object} props.rest - [auto generate]
  * @returns {JSX.Element} React component
  */
 const ButtonWithConstFunction = (props) => {

@@ -3,9 +3,9 @@
  * @component FunctionButton
  *
  * @param {Object} props Component props
- * @param {*} props.type - type prop
- * @param {*} props.onClick - onClick prop
- * @param {*} props.children - children prop
+ * @param {*} props.type - [auto generate]
+ * @param {*} props.onClick - [auto generate]
+ * @param {*} props.children - [auto generate]
  * @returns {JSX.Element} React component
  */
 function FunctionButton({ type, onClick, children }) {
