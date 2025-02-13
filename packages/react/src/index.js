@@ -49,6 +49,14 @@ const reactJsDocPlugin = {
           paramName: 'props'
         };
 
+        // Handle missing loc
+        const loc = path.node.loc;
+        if (!loc || !loc.start) {
+          componentInfo.lineNumber = -1;
+        } else {
+          componentInfo.lineNumber = loc.start.line;
+        }
+
         analyzeComponent(path, componentInfo);
         const jsDoc = generateJsDoc(
           componentInfo.name,
@@ -82,6 +90,11 @@ const reactJsDocPlugin = {
           componentName = parent.parentPath.node.id.name;
         }
 
+        // If componentName is undefined, provide a default name
+        if (!componentName) {
+          componentName = `AnonymousComponent_${Date.now()}`;
+        }
+
         // Check if component already processed
         const componentKey = `${filename}:${componentName}`;
         if (processedComponents.has(componentKey)) {
@@ -105,6 +118,15 @@ const reactJsDocPlugin = {
           componentName,
           paramName: 'props'
         };
+
+        // Handle missing loc
+        const loc = (parent.node.type === 'VariableDeclarator' ? parent.node.loc : parent.parentPath.node.loc);
+        if (!loc || !loc.start) {
+          componentInfo.lineNumber = -1;
+        } else {
+          componentInfo.lineNumber = loc.start.line;
+        }
+
         analyzeComponent(path, componentInfo);
         const jsDoc = generateJsDoc(
           componentInfo.name,
@@ -165,6 +187,14 @@ const reactJsDocPlugin = {
           paramName: 'props' // Add paramName
         };
 
+        // Handle missing loc
+        const loc = path.node.loc;
+        if (!loc || !loc.start) {
+          componentInfo.lineNumber = -1;
+        } else {
+          componentInfo.lineNumber = loc.start.line;
+        }
+
         analyzeComponent(path.get('declaration'), componentInfo);
 
         const jsDoc = generateJsDoc(
@@ -198,8 +228,7 @@ function isReactComponent(node) {
   const isJSX = (type) => {
     return type === 'JSXElement' || 
            type === 'JSXFragment' || 
-           type === 'JSXText' ||
-           type === 'JSXFragment';
+           type === 'JSXText';
   };
 
   // Check if it's wrapped in memo or other HOCs
