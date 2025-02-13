@@ -218,7 +218,7 @@ const reactJsDocPlugin = {
 };
 
 /**
- * 檢查一個 block 裡是否有 return JSX
+ * check whether the block contains return JSX
  * @param {import('@babel/core').types.Statement[]} statements
  * @param {Function} containsJSX
  * @param {Function} isWrappedComponent
@@ -226,7 +226,7 @@ const reactJsDocPlugin = {
  */
 function hasReturnStatementWithJSX(statements, containsJSX, isWrappedComponent) {
   for (const st of statements) {
-    // 1) 直接碰到 return
+    // 1) directly return
     if (
       st.type === 'ReturnStatement' &&
       st.argument &&
@@ -235,34 +235,57 @@ function hasReturnStatementWithJSX(statements, containsJSX, isWrappedComponent) 
       return true;
     }
 
-    // 2) 如果是 if-statement，需要再深入 .consequent 或 .alternate
+    // 2) if-statement, need to scan the consequent or alternate
     if (st.type === 'IfStatement') {
-      // if 的區塊
+      // (A) if consequent is a ReturnStatement
+      if (
+        st.consequent &&
+        st.consequent.type === 'ReturnStatement' &&
+        st.consequent.argument &&
+        (containsJSX(st.consequent.argument) || isWrappedComponent(st.consequent.argument))
+      ) {
+        return true;
+      }
+      // (B) if consequent is also an IfStatement, continue recursion
+      if (st.consequent && st.consequent.type === 'IfStatement') {
+        if (hasReturnStatementWithJSX([st.consequent], containsJSX, isWrappedComponent)) {
+          return true;
+        }
+      }
+      // (C) check the original block statement
       if (
         st.consequent?.type === 'BlockStatement' &&
         hasReturnStatementWithJSX(st.consequent.body, containsJSX, isWrappedComponent)
       ) {
         return true;
       }
-      // else 區塊
+      // (D) alternate is also an IfStatement
       if (st.alternate) {
+        // (E) if alternate is a ReturnStatement
+        if (
+          st.alternate.type === 'ReturnStatement' &&
+          st.alternate.argument &&
+          (containsJSX(st.alternate.argument) || isWrappedComponent(st.alternate.argument))
+        ) {
+          return true;
+        }
+        // (F) if alternate is also an IfStatement
+        if (st.alternate.type === 'IfStatement') {
+          if (hasReturnStatementWithJSX([st.alternate], containsJSX, isWrappedComponent)) {
+            return true;
+          }
+        }
+        // (G) if alternate is a BlockStatement
         if (
           st.alternate.type === 'BlockStatement' &&
           hasReturnStatementWithJSX(st.alternate.body, containsJSX, isWrappedComponent)
         ) {
           return true;
         }
-        // 有時 alternate 也是一個 if-statement（if-else if-else if...）
-        if (
-          st.alternate.type === 'IfStatement' &&
-          hasReturnStatementWithJSX([st.alternate], containsJSX, isWrappedComponent)
-        ) {
-          return true;
-        }
       }
     }
 
-    // 3) 其他像是 for, while, switch ... 您可視需求遞迴
+    // 3) other like for, while, switch ... you can recursively check as needed
     if (st.type === 'ForStatement' || st.type === 'WhileStatement') {
       if (
         st.body?.type === 'BlockStatement' &&
