@@ -1,5 +1,11 @@
 # @quick-gen/react
 
+## 0.2.4
+
+### Patch Changes
+
+- Add more conditional render check
+
 ## 0.2.3
 
 ### Patch Changes
