@@ -187,6 +187,10 @@ const reactJsDocPlugin = {
   }
 };
 
+/**
+ * @param {import('@babel/core').Node} node 
+ * @returns {boolean}
+ */
 function isReactComponent(node) {
   if (!node) return false;
   
@@ -315,6 +319,13 @@ function analyzeComponent(path, componentInfo) {
   console.log('Found props:', Array.from(componentInfo.props));
 }
 
+/**
+ * @param {string} componentName
+ * @param {string} paramName
+ * @param {string[]} props
+ * @param {boolean} hasSpreadProps
+ * @returns {string}
+ */
 function generateJsDoc(componentName, paramName, props, hasSpreadProps) {
   let doc = '';
   doc += `/**\n`;
@@ -343,6 +354,9 @@ function generateJsDoc(componentName, paramName, props, hasSpreadProps) {
   return doc;
 }
 
+/**
+ * @param {string} directory
+ */
 async function generateDocs(directory) {
   try {
     // Reset all states
