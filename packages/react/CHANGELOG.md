@@ -1,5 +1,11 @@
 # @quick-gen/react
 
+## 0.2.3
+
+### Patch Changes
+
+- Add more case to check and add jsdoc
+
 ## 0.2.2
 
 ### Patch Changes
