@@ -43,7 +43,7 @@ const reactJsDocPlugin = {
           name: componentName,
           props: new Set(),
           hasSpreadProps: false,
-          lineNumber: path.node.loc.start.line,
+          lineNumber: path.node.loc?.start?.line || -1,
           modified: true,
           componentName,
           paramName: 'props'
@@ -100,7 +100,7 @@ const reactJsDocPlugin = {
           name: componentName,
           props: new Set(),
           hasSpreadProps: false,
-          lineNumber: parent.node.type === 'VariableDeclarator' ? parent.node.loc.start.line : parent.parentPath.node.loc.start.line,
+          lineNumber: (parent.node.type === 'VariableDeclarator' ? parent.node.loc?.start?.line : parent.parentPath.node.loc?.start?.line) || -1,
           modified: true,
           componentName,
           paramName: 'props'
@@ -159,7 +159,7 @@ const reactJsDocPlugin = {
           name: componentName,
           props: new Set(),
           hasSpreadProps: false,
-          lineNumber: path.node.loc.start.line,
+          lineNumber: path.node.loc?.start?.line || -1,
           modified: true,
           componentName,
           paramName: 'props' // Add paramName
@@ -188,7 +188,7 @@ const reactJsDocPlugin = {
 };
 
 /**
- * @param {import('@babel/core').Node} node 
+ * @param {import('@babel/core').Node} node
  * @returns {boolean}
  */
 function isReactComponent(node) {
@@ -250,8 +250,8 @@ function isReactComponent(node) {
 }
 
 /**
- * @param {import('@babel/core').NodePath} path 
- * @param {ComponentInfo} componentInfo 
+ * @param {import('@babel/core').NodePath} path
+ * @param {ComponentInfo} componentInfo
  */
 function analyzeComponent(path, componentInfo) {
   // Analyze props from parameters
@@ -408,12 +408,27 @@ async function generateDocs(directory) {
           
           // Add JSDoc for each component from bottom to top
           for (const component of components) {
-            const componentLine = lines[component.lineNumber - 1];
+            const idx = component.lineNumber - 1;
+
+            // Check if lineNumber is valid
+            if (idx < 0 || idx >= lines.length) {
+              console.warn(`Line number [${component.lineNumber}] is out of range in file: ${file}`);
+              continue; // Skip this component
+            }
+
+            const componentLine = lines[idx];
+
+            // Check if componentLine is a valid string
+            if (typeof componentLine !== 'string') {
+              console.warn(`Line content is not a valid string for line ${component.lineNumber} in file: ${file}`);
+              continue; // Skip this component
+            }
+
             const indentation = componentLine.match(/^\s*/)[0];
             const jsDocLines = component.jsDoc.split('\n')
               .map(line => indentation + line)
               .join('\n');
-            lines.splice(component.lineNumber - 1, 0, jsDocLines);
+            lines.splice(idx, 0, jsDocLines);
           }
           
           code = lines.join('\n').replace(/\r\n/g, '\n');
