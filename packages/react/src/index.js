@@ -6,6 +6,18 @@ const babel = require('@babel/core');
 const propsCache = new Map();
 const processedComponents = new Set(); // Track processed components
 
+/**
+ * @typedef {Object} ComponentInfo
+ * @property {string} name
+ * @property {Set<string>} props
+ * @property {boolean} hasSpreadProps
+ * @property {number} lineNumber
+ * @property {boolean} modified
+ */
+
+/**
+ * @type {import('@babel/core').PluginObj}
+ */
 const reactJsDocPlugin = {
   visitor: {
     FunctionDeclaration(path) {
@@ -233,6 +245,10 @@ function isReactComponent(node) {
   return false;
 }
 
+/**
+ * @param {import('@babel/core').NodePath} path 
+ * @param {ComponentInfo} componentInfo 
+ */
 function analyzeComponent(path, componentInfo) {
   // Analyze props from parameters
   let paramName = null; // Store the parameter name
