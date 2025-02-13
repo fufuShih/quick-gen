@@ -73,6 +73,11 @@ describe('generateDocs', () => {
       file: 'ComponentWithAnoymous.jsx',
       description: 'Component with an anonymous export default function'
     },
+    {
+      name: 'component with conditional rendering',
+      file: 'ComponentWithConditional.jsx',
+      description: 'Component with conditional rendering'
+    },
   ];
 
   testCases.forEach(({ name, file, description }) => {
