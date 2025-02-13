@@ -221,15 +221,58 @@ const reactJsDocPlugin = {
  * @param {import('@babel/core').Node} node
  * @returns {boolean}
  */
-function isReactComponent(node) {
+function containsJSX(node) {
   if (!node) return false;
-  
-  // Improved JSX detection
+
+  // isJSX 相當於檢查是否是 'JSXElement' | 'JSXFragment' | 'JSXText'
   const isJSX = (type) => {
     return type === 'JSXElement' || 
            type === 'JSXFragment' || 
            type === 'JSXText';
   };
+
+  // If self is JSX, return true
+  if (isJSX(node.type)) {
+    return true;
+  }
+
+  // Ternary operator, check its branches
+  if (node.type === 'ConditionalExpression') {
+    return containsJSX(node.consequent) || containsJSX(node.alternate);
+  }
+
+  // Logical operator, check left and right
+  if (node.type === 'LogicalExpression') {
+    return containsJSX(node.left) || containsJSX(node.right);
+  }
+
+  // Sequence operator, check each expression
+  if (node.type === 'SequenceExpression') {
+    return node.expressions.some(expr => containsJSX(expr));
+  }
+
+  // Parenthesized expression
+  if (node.type === 'ParenthesizedExpression') {
+    return containsJSX(node.expression);
+  }
+
+  // Other cases are temporarily considered false
+  return false;
+}
+
+/**
+ * @param {import('@babel/core').Node} node
+ * @returns {boolean}
+ */
+function isReactComponent(node) {
+  if (!node) return false;
+
+  // Improved JSX detection
+  // const isJSX = (type) => { // Removed isJSX, as it is now within containsJSX
+  //   return type === 'JSXElement' || 
+  //          type === 'JSXFragment' || 
+  //          type === 'JSXText';
+  // };
 
   // Check if it's wrapped in memo or other HOCs
   const isWrappedComponent = (node) => {
@@ -248,25 +291,28 @@ function isReactComponent(node) {
   // For arrow functions and function expressions
   if (node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression') {
     // Direct JSX return
-    if (isJSX(node.body?.type)) {
+    // if (isJSX(node.body?.type)) { // Replaced with containsJSX
+    //   return true;
+    // }
+    if (containsJSX(node.body)) {
       return true;
     }
     // Block with return statement
     if (node.body?.type === 'BlockStatement') {
-      return node.body.body.some(statement => 
-        statement.type === 'ReturnStatement' && 
-        statement.argument && 
-        (isJSX(statement.argument.type) || isWrappedComponent(statement.argument))
+      return node.body.body.some(statement =>
+        statement.type === 'ReturnStatement' &&
+        statement.argument &&
+        (containsJSX(statement.argument) || isWrappedComponent(statement.argument))
       );
     }
   }
 
   // For function declarations
   if (node.type === 'FunctionDeclaration') {
-    return node.body.body.some(statement => 
-      statement.type === 'ReturnStatement' && 
-      statement.argument && 
-      (isJSX(statement.argument.type) || isWrappedComponent(statement.argument))
+    return node.body.body.some(statement =>
+      statement.type === 'ReturnStatement' &&
+      statement.argument &&
+      (containsJSX(statement.argument) || isWrappedComponent(statement.argument))
     );
   }
 
@@ -334,11 +380,7 @@ function analyzeComponent(path, componentInfo) {
       }
     },
     SpreadElement(path) {
-      // This part seems to assume the spread is always on 'props'.
-      // It might be good to check if this is always the case, or if
-      // we need to adapt this as well.  For now, I'll leave it as is
-      // since the user's instructions focused on MemberExpression.
-      if (path.node.argument.name === 'props') {
+      if (componentInfo.paramName && path.node.argument.name === componentInfo.paramName) {
         componentInfo.hasSpreadProps = true;
       }
     }
