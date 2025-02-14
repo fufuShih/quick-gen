@@ -53,6 +53,16 @@ describe('generateDocs', () => {
       file: 'Button4.jsx',
       description: 'Component with rest parameter in props'
     },
+    {
+      name: 'component with const function',
+      file: 'ButtonWithConstFunction.jsx',
+      description: 'Component with a const function'
+    },
+    {
+      name: 'component with function',
+      file: 'FunctionButton.jsx',
+      description: 'Component with a function'
+    },
     // FIXME: memo component is not working
     // {
     //   name: 'memo component',
