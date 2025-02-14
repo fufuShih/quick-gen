@@ -1,5 +1,11 @@
 # @quick-gen/react
 
+## 0.2.6
+
+### Patch Changes
+
+- add strict conditional and ignore component inside react component
+
 ## 0.2.5
 
 ### Patch Changes
