@@ -16,16 +16,36 @@ const processedComponents = new Set(); // Track processed components
  */
 
 /**
+ * Find if the current path is inside another React component
+ * @param {import('@babel/core').NodePath} path
+ * @returns {boolean}
+ */
+function isInsideAnotherReactComponent(path) {
+  return !!path.findParent((p) => {
+    // skip itself
+    if (p === path) return false;
+    // check if the parent is a React component
+    return isReactComponent(p.node);
+  });
+}
+
+/**
  * @type {import('@babel/core').PluginObj}
  */
 const reactJsDocPlugin = {
   visitor: {
     FunctionDeclaration(path) {
       if (!isReactComponent(path.node)) return;
+
+      // Skip if the function is inside another React component
+      if (isInsideAnotherReactComponent(path)) {
+        return;
+      }
+
       if (path.node.id) {
         const filename = path.hub.file.opts.filename;
         const componentName = path.node.id.name;
-        
+
         // Check if component already processed
         const componentKey = `${filename}:${componentName}`;
         if (processedComponents.has(componentKey)) {
@@ -34,7 +54,7 @@ const reactJsDocPlugin = {
 
         // Skip if component already has JSDoc
         const leadingComments = path.node.leadingComments;
-        if (leadingComments && leadingComments.some(comment => 
+        if (leadingComments && leadingComments.some(comment =>
           comment.type === 'CommentBlock' && comment.value.includes('@component'))) {
           return;
         }
@@ -73,13 +93,19 @@ const reactJsDocPlugin = {
           ...componentInfo,
           jsDoc
         });
-        
+
         // Mark component as processed
         processedComponents.add(componentKey);
       }
     },
     ArrowFunctionExpression(path) {
       if (!isReactComponent(path.node)) return;
+
+      // Skip if the arrow function is inside another React component
+      if (isInsideAnotherReactComponent(path)) {
+        return;
+      }
+
       const parent = path.parentPath;
       if (parent.node.type === 'VariableDeclarator' || parent.node.type === 'CallExpression') {
         const filename = path.hub.file.opts.filename;
@@ -102,9 +128,9 @@ const reactJsDocPlugin = {
         }
 
         // Skip if component already has JSDoc
-        const leadingComments = parent.node.leadingComments || 
+        const leadingComments = parent.node.leadingComments ||
                               (parent.parentPath && parent.parentPath.node.leadingComments);
-        if (leadingComments && leadingComments.some(comment => 
+        if (leadingComments && leadingComments.some(comment =>
           comment.type === 'CommentBlock' && comment.value.includes('@component'))) {
           return;
         }
@@ -143,7 +169,7 @@ const reactJsDocPlugin = {
           ...componentInfo,
           jsDoc
         });
-        
+
         // Mark component as processed
         processedComponents.add(componentKey);
       }
@@ -157,6 +183,11 @@ const reactJsDocPlugin = {
       ) {
         // Check if it's a React Component
         if (!isReactComponent(decl)) return;
+
+        // Skip if the function is inside another React component
+        if (isInsideAnotherReactComponent(path.get('declaration'))) {
+          return;
+        }
 
         // Assign default name if anonymous, otherwise use existing name
         const componentName = decl.id ? decl.id.name : 'DefaultExportComponent';
