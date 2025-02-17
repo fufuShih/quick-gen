@@ -31,8 +31,7 @@
   "license": "MIT",
   "scripts": {
     "test": "jest",
-    "test:watch": "jest --watch",
-    "prepack": "echo '建議先執行 build 指令再發布' && exit 1"
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@babel/core": "^7.23.0",
