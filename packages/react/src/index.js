@@ -3,9 +3,11 @@ const path = require('path');
 const glob = require('glob');
 const babel = require('@babel/core');
 const MagicString = require('magic-string');
+const {
+  isReactComponent,
+  generateJsDoc,
+} = require('./helper');
 
-const propsCache = new Map();
-const processedComponents = new Set(); // Track processed components
 
 /**
  * @typedef {Object} ComponentInfo
@@ -17,17 +19,75 @@ const processedComponents = new Set(); // Track processed components
  */
 
 /**
- * Find if the current path is inside another React component
  * @param {import('@babel/core').NodePath} path
  * @returns {boolean}
  */
 function isInsideAnotherReactComponent(path) {
   return !!path.findParent((p) => {
-    // skip itself
     if (p === path) return false;
-    // check if the parent is a React component
     return isReactComponent(p.node);
   });
+}
+
+/**
+ * @param {import('@babel/core').NodePath} path
+ * @param {ComponentInfo} componentInfo
+ */
+function analyzeComponent(path, componentInfo) {
+  // Analyze props from parameters
+  let paramName = null;
+  if (path.node.params && path.node.params[0]) {
+    const firstParam = path.node.params[0];
+    if (firstParam.type === 'Identifier') {
+      paramName = firstParam.name;
+      path.traverse({
+        VariableDeclarator(childPath) {
+          const init = childPath.node.init;
+          if (init && init.name === firstParam.name) {
+            const id = childPath.node.id;
+            if (id.type === 'ObjectPattern') {
+              id.properties.forEach(prop => {
+                if (prop.type === 'ObjectProperty') {
+                  componentInfo.props.add(prop.key.name);
+                } else if (prop.type === 'RestElement') {
+                  componentInfo.hasSpreadProps = true;
+                  componentInfo.props.add('...' + prop.argument.name);
+                }
+              });
+            }
+          }
+        }
+      });
+    }
+    if (firstParam.type === 'ObjectPattern') {
+      firstParam.properties.forEach(prop => {
+        if (prop.type === 'ObjectProperty') {
+          componentInfo.props.add(prop.key.name);
+        } else if (prop.type === 'RestElement') {
+          componentInfo.hasSpreadProps = true;
+          componentInfo.props.add('...' + prop.argument.name);
+        }
+      });
+    }
+  }
+
+  componentInfo.paramName = paramName || 'props';
+
+  path.traverse({
+    MemberExpression(path) {
+      if (componentInfo.paramName && path.node.object.name === componentInfo.paramName) {
+        componentInfo.props.add(path.node.property.name);
+      }
+    },
+    SpreadElement(path) {
+      if (componentInfo.paramName && path.node.argument.name === componentInfo.paramName) {
+        componentInfo.hasSpreadProps = true;
+      }
+    }
+  });
+
+  console.log('Analyzing component:', componentInfo.name);
+  console.log('Found props:', Array.from(componentInfo.props));
 }
 
 /**
@@ -190,308 +250,6 @@ function reactJsDocPlugin() {
   };
 }
 
-/**
- * check whether the block contains return JSX
- * @param {import('@babel/core').types.Statement[]} statements
- * @param {Function} containsJSX
- * @param {Function} isWrappedComponent
- * @returns {boolean}
- */
-function hasReturnStatementWithJSX(statements, containsJSX, isWrappedComponent) {
-  for (const st of statements) {
-    // 1) directly return
-    if (
-      st.type === 'ReturnStatement' &&
-      st.argument &&
-      (containsJSX(st.argument) || isWrappedComponent(st.argument))
-    ) {
-      return true;
-    }
-
-    // 2) if-statement, need to scan the consequent or alternate
-    if (st.type === 'IfStatement') {
-      // (A) if consequent is a ReturnStatement
-      if (
-        st.consequent &&
-        st.consequent.type === 'ReturnStatement' &&
-        st.consequent.argument &&
-        (containsJSX(st.consequent.argument) || isWrappedComponent(st.consequent.argument))
-      ) {
-        return true;
-      }
-      // (B) if consequent is also an IfStatement, continue recursion
-      if (st.consequent && st.consequent.type === 'IfStatement') {
-        if (hasReturnStatementWithJSX([st.consequent], containsJSX, isWrappedComponent)) {
-          return true;
-        }
-      }
-      // (C) check the original block statement
-      if (
-        st.consequent?.type === 'BlockStatement' &&
-        hasReturnStatementWithJSX(st.consequent.body, containsJSX, isWrappedComponent)
-      ) {
-        return true;
-      }
-      // (D) alternate is also an IfStatement
-      if (st.alternate) {
-        // (E) if alternate is a ReturnStatement
-        if (
-          st.alternate.type === 'ReturnStatement' &&
-          st.alternate.argument &&
-          (containsJSX(st.alternate.argument) || isWrappedComponent(st.alternate.argument))
-        ) {
-          return true;
-        }
-        // (F) if alternate is also an IfStatement
-        if (st.alternate.type === 'IfStatement') {
-          if (hasReturnStatementWithJSX([st.alternate], containsJSX, isWrappedComponent)) {
-            return true;
-          }
-        }
-        // (G) if alternate is a BlockStatement
-        if (
-          st.alternate.type === 'BlockStatement' &&
-          hasReturnStatementWithJSX(st.alternate.body, containsJSX, isWrappedComponent)
-        ) {
-          return true;
-        }
-      }
-    }
-
-    // 3) other like for, while, switch ... you can recursively check as needed
-    if (st.type === 'ForStatement' || st.type === 'WhileStatement') {
-      if (
-        st.body?.type === 'BlockStatement' &&
-        hasReturnStatementWithJSX(st.body.body, containsJSX, isWrappedComponent)
-      ) {
-        return true;
-      }
-    }
-
-    if (st.type === 'SwitchStatement') {
-      for (const cs of st.cases) {
-        if (
-          cs.consequent &&
-          hasReturnStatementWithJSX(cs.consequent, containsJSX, isWrappedComponent)
-        ) {
-          return true;
-        }
-      }
-    }
-
-  }
-  return false;
-}
-
-/**
- * @param {import('@babel/core').Node} node
- * @returns {boolean}
- */
-function containsJSX(node) {
-  if (!node) return false;
-
-  // check whether the node is 'JSXElement' | 'JSXFragment' | 'JSXText'
-  const isJSX = (type) => {
-    return type === 'JSXElement' || 
-           type === 'JSXFragment' || 
-           type === 'JSXText';
-  };
-
-  // If self is JSX, return true
-  if (isJSX(node.type)) {
-    return true;
-  }
-
-  // Ternary operator, check its branches
-  if (node.type === 'ConditionalExpression') {
-    return containsJSX(node.consequent) || containsJSX(node.alternate);
-  }
-
-  // Logical operator, check left and right
-  if (node.type === 'LogicalExpression') {
-    return containsJSX(node.left) || containsJSX(node.right);
-  }
-
-  // Sequence operator, check each expression
-  if (node.type === 'SequenceExpression') {
-    return node.expressions.some(expr => containsJSX(expr));
-  }
-
-  // Parenthesized expression
-  if (node.type === 'ParenthesizedExpression') {
-    return containsJSX(node.expression);
-  }
-
-  // Other cases are temporarily considered false
-  return false;
-}
-
-/**
- * detect whether the node is React component
- * @param {import('@babel/core').Node} node
- */
-function isReactComponent(node) {
-  if (!node) return false;
-
-  // Keep the original "wrapped component" check...
-  const isWrappedComponent = (node) => {
-    if (node.type === 'CallExpression') {
-      const callee = node.callee;
-      if (
-        callee.type === 'Identifier' &&
-        (callee.name === 'memo' || callee.name === 'forwardRef')
-      ) {
-        const args = node.arguments;
-        return args.length > 0 && isReactComponent(args[0]);
-      }
-    }
-    return false;
-  };
-
-  // ArrowFunction / FunctionExpression
-  if (
-    node.type === 'ArrowFunctionExpression' ||
-    node.type === 'FunctionExpression'
-  ) {
-    // check whether the body contains JSX
-    if (containsJSX(node.body)) {
-      return true;
-    }
-    // if body is a block statement, need to scan the whole block
-    if (node.body?.type === 'BlockStatement') {
-      return hasReturnStatementWithJSX(node.body.body, containsJSX, isWrappedComponent);
-    }
-  }
-
-  // FunctionDeclaration
-  if (node.type === 'FunctionDeclaration') {
-    if (node.body && node.body.type === 'BlockStatement') {
-      // scan the whole block
-      return hasReturnStatementWithJSX(node.body.body, containsJSX, isWrappedComponent);
-    }
-  }
-
-  // 3) if wrapped in memo(...)、forwardRef(...)
-  if (isWrappedComponent(node)) {
-    return true;
-  }
-
-  // default is not a React component
-  return false;
-}
-
-/**
- * @param {import('@babel/core').NodePath} path
- * @param {ComponentInfo} componentInfo
- */
-function analyzeComponent(path, componentInfo) {
-  // Analyze props from parameters
-  let paramName = null; // Store the parameter name
-  if (path.node.params && path.node.params[0]) {
-    const firstParam = path.node.params[0];
-    if (firstParam.type === 'Identifier') {
-      // Capture the parameter name if it's an Identifier
-      paramName = firstParam.name;
-      // find the variable declarator that has the same name as the first param
-      path.traverse({
-        VariableDeclarator(childPath) {
-          const init = childPath.node.init;
-          if (init && init.name === firstParam.name) {
-            const id = childPath.node.id;
-            if (id.type === 'ObjectPattern') {
-              id.properties.forEach(prop => {
-                if (prop.type === 'ObjectProperty') {
-                  componentInfo.props.add(prop.key.name);
-                } else if (prop.type === 'RestElement') {
-                  componentInfo.hasSpreadProps = true;
-                  componentInfo.props.add('...' + prop.argument.name);
-                }
-              });
-            }
-          }
-        }
-      });
-    }
-    if (firstParam.type === 'ObjectPattern') {
-      firstParam.properties.forEach(prop => {
-        if (prop.type === 'ObjectProperty') {
-          componentInfo.props.add(prop.key.name);
-        } else if (prop.type === 'RestElement') {
-          componentInfo.hasSpreadProps = true;
-          componentInfo.props.add('...' + prop.argument.name);
-        }
-      });
-    }
-  }
-
-  // No parameter or no identifier, default to 'props'
-  componentInfo.paramName = paramName || 'props';
-
-  // Analyze props usage in the component body
-  path.traverse({
-    MemberExpression(path) {
-      // Use the captured parameter name instead of "props"
-      if (componentInfo.paramName && path.node.object.name === componentInfo.paramName) {
-        componentInfo.props.add(path.node.property.name);
-      }
-    },
-    SpreadElement(path) {
-      if (componentInfo.paramName && path.node.argument.name === componentInfo.paramName) {
-        componentInfo.hasSpreadProps = true;
-      }
-    }
-  });
-
-  console.log('Analyzing component:', componentInfo.name);
-  console.log('Found props:', Array.from(componentInfo.props));
-}
-
-/**
- * @param {string} componentName
- * @param {string} paramName
- * @param {string[]} props
- * @param {boolean} hasSpreadProps
- * @returns {string}
- */
-function generateJsDoc(componentName, paramName, props, hasSpreadProps) {
-  let doc = '';
-  doc += `/**\n`;
-  doc += ` * @generated ${Date.now()}\n`;
-  doc += ` * @component ${componentName.replace(/^_+/, '')}\n`;
-  doc += ` *\n`;
-  doc += ` * @param {Object} ${paramName} Component props\n`;
-  
-  const normalProps = props.filter(prop => !prop.startsWith('...'));
-  const spreadProps = props.find(prop => prop.startsWith('...'));
-  
-  normalProps.forEach(prop => {
-    doc += ` * @param {*} ${paramName}.${prop} - [auto generate]\n`;
-  });
-
-  if (spreadProps) {
-    const restName = spreadProps.slice(3);
-    doc += ` * @param {Object} ${paramName}.${restName} - [auto generate]\n`;
-  } else if (hasSpreadProps) {
-    doc += ` * @param {Object} ${paramName}.rest - [auto generate]\n`;
-  }
-
-  doc += ` * @returns {JSX.Element} React component\n`;
-  doc += ` */`;
-  
-  return doc;
-}
-
-// New helper function to format JSDoc for addComment
-function formatToBlockComment(fullJsDocString) {
-  return fullJsDocString
-    .replace(/^\/\*\*/, '')
-    .replace(/\*\/$/, '')
-    .trim();
-}
-
-/**
- * @param {string} directory
- */
 async function generateDocs(directory) {
   try {
     console.log('🔍 Scanning directory:', directory);
