@@ -1,4 +1,5 @@
 // This component doesn't have JSDoc yet
+
 /**
  * @generated 1700000000000
  * @component HeaderButton
@@ -17,6 +18,7 @@ const HeaderButton = ({ onClick, text }) => {
 };
 
 // This component doesn't have JSDoc yet
+
 /**
  * @generated 1700000000000
  * @component ContentButton
@@ -56,6 +58,7 @@ const FooterButton = ({ onClick, label, disabled }) => {
 };
 
 // This component doesn't have JSDoc yet
+
 /**
  * @generated 1700000000000
  * @component SidebarButton

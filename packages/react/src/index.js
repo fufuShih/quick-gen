@@ -578,7 +578,13 @@ async function generateDocs(directory) {
           plugins: [reactJsDocPlugin],
           parserOpts: {
             plugins: ['jsx'],
-            sourceType: 'module'
+            sourceType: 'module',
+            attachComment: true,
+            tokens: true,
+          },
+          generatorOpts: {
+            comments: true,
+            retainLines: true,
           },
           babelrc: false,
           configFile: false
@@ -609,11 +615,22 @@ async function generateDocs(directory) {
               continue; // Skip this component
             }
 
+            const prevLines = lines.slice(Math.max(0, idx - 10), idx).join('\n');
+            if (prevLines.includes('@component')) {
+              console.log(`Skipping ${component.name} - JSDoc already exists`);
+              continue;
+            }
+
             const indentation = componentLine.match(/^\s*/)[0];
             const jsDocLines = component.jsDoc.split('\n')
               .map(line => indentation + line)
               .join('\n');
-            lines.splice(idx, 0, jsDocLines);
+
+            if (idx > 0 && lines[idx - 1].trim() !== '') {
+              lines.splice(idx, 0, '', jsDocLines);
+            } else {
+              lines.splice(idx, 0, jsDocLines);
+            }
           }
           
           code = lines.join('\n').replace(/\r\n/g, '\n');
