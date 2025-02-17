@@ -9,6 +9,14 @@
   "bin": {
     "quick-gen-react": "./bin/cli.js"
   },
+  "files": [
+    "src/index.js",
+    "src/helper.js",
+    "bin/cli.js",
+    "README.md",
+    ".babelrc",
+    "CHANGELOG.md"
+  ],
   "homepage": "https://github.com/fufuShih/quick-gen",
   "repository": {
     "type": "git",
@@ -24,7 +32,7 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "clean": "rimraf dist"
+    "prepack": "echo '建議先執行 build 指令再發布' && exit 1"
   },
   "dependencies": {
     "@babel/core": "^7.23.0",
