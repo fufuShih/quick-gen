@@ -1,6 +1,6 @@
 {
   "name": "@quick-gen/cli",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "Quick and flexible code generation toolkit",
   "main": "src/index.js",
   "bin": {
@@ -27,7 +27,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@quick-gen/react": "^0.2.0",
+    "@quick-gen/react": "^0.3.0",
     "@quick-gen/knowledge": "^0.1.13",
     "yargs": "^17.7.2"
   },

@@ -1,5 +1,14 @@
 # @quick-gen/react
 
+## 0.3.0
+
+### Minor Changes
+
+- Enhance the parse method 
+- separte the helper code to a new file
+- add more test case
+- modify the upload to registry files
+
 ## 0.2.6
 
 ### Patch Changes
