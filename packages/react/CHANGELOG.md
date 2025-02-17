@@ -1,10 +1,16 @@
 # @quick-gen/react
 
+## 0.3.1
+
+### Patch Changes
+
+- remove unused prepack
+
 ## 0.3.0
 
 ### Minor Changes
 
-- Enhance the parse method 
+- Enhance the parse method
 - separte the helper code to a new file
 - add more test case
 - modify the upload to registry files

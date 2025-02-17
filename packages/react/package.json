@@ -1,6 +1,6 @@
 {
   "name": "@quick-gen/react",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "React code generator and documentation tool",
   "main": "src/index.js",
   "publishConfig": {
