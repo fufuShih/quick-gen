@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
 const babel = require('@babel/core');
+const MagicString = require('magic-string');
 
 const propsCache = new Map();
 const processedComponents = new Set(); // Track processed components
@@ -32,221 +33,162 @@ function isInsideAnotherReactComponent(path) {
 /**
  * @type {import('@babel/core').PluginObj}
  */
-const reactJsDocPlugin = {
-  visitor: {
-    FunctionDeclaration(path) {
-      if (!isReactComponent(path.node)) return;
-
-      // Skip if the function is inside another React component
-      if (isInsideAnotherReactComponent(path)) {
-        return;
-      }
-
-      if (path.node.id) {
-        const filename = path.hub.file.opts.filename;
-        const componentName = path.node.id.name;
-
-        // Check if component already processed
-        const componentKey = `${filename}:${componentName}`;
-        if (processedComponents.has(componentKey)) {
-          return;
-        }
-
-        // Skip if component already has JSDoc
-        const leadingComments = path.node.leadingComments;
-        if (leadingComments && leadingComments.some(comment =>
-          comment.type === 'CommentBlock' && comment.value.includes('@component'))) {
-          return;
-        }
-
-        const componentInfo = {
-          name: componentName,
-          props: new Set(),
-          hasSpreadProps: false,
-          lineNumber: path.node.loc?.start?.line || -1,
-          modified: true,
-          componentName,
-          paramName: 'props'
-        };
-
-        // Handle missing loc
-        const loc = path.node.loc;
-        if (!loc || !loc.start) {
-          componentInfo.lineNumber = -1;
-        } else {
-          componentInfo.lineNumber = loc.start.line;
-        }
-
-        analyzeComponent(path, componentInfo);
-        const jsDoc = generateJsDoc(
-          componentInfo.name,
-          componentInfo.paramName,
-          Array.from(componentInfo.props),
-          componentInfo.hasSpreadProps
-        );
-
-        // Initialize components array if not exists
-        if (!propsCache.has(filename)) {
-          propsCache.set(filename, []);
-        }
-        propsCache.get(filename).push({
-          ...componentInfo,
-          jsDoc
-        });
-
-        // Mark component as processed
-        processedComponents.add(componentKey);
-      }
+function reactJsDocPlugin() {
+  return {
+    pre(file) {
+      this.insertionPoints = [];
     },
-    ArrowFunctionExpression(path) {
-      if (!isReactComponent(path.node)) return;
+    visitor: {
+      FunctionDeclaration(path) {
+        if (!isReactComponent(path.node)) return;
+        if (isInsideAnotherReactComponent(path)) return;
+        if (!path.node.id) return;
 
-      // Skip if the arrow function is inside another React component
-      if (isInsideAnotherReactComponent(path)) {
-        return;
-      }
-
-      const parent = path.parentPath;
-      if (parent.node.type === 'VariableDeclarator' || parent.node.type === 'CallExpression') {
-        const filename = path.hub.file.opts.filename;
-        let componentName;
-        if (parent.node.type === 'VariableDeclarator') {
-          componentName = parent.node.id.name;
-        } else if (parent.node.type === 'CallExpression' && parent.parentPath.node.type === 'VariableDeclarator') {
-          componentName = parent.parentPath.node.id.name;
-        }
-
-        // If componentName is undefined, provide a default name
-        if (!componentName) {
-          componentName = `AnonymousComponent_${Date.now()}`;
-        }
-
-        // Check if component already processed
-        const componentKey = `${filename}:${componentName}`;
-        if (processedComponents.has(componentKey)) {
-          return;
-        }
-
-        // Skip if component already has JSDoc
-        const leadingComments = parent.node.leadingComments ||
-                              (parent.parentPath && parent.parentPath.node.leadingComments);
-        if (leadingComments && leadingComments.some(comment =>
-          comment.type === 'CommentBlock' && comment.value.includes('@component'))) {
-          return;
-        }
-
-        const componentInfo = {
-          name: componentName,
-          props: new Set(),
-          hasSpreadProps: false,
-          lineNumber: (parent.node.type === 'VariableDeclarator' ? parent.node.loc?.start?.line : parent.parentPath.node.loc?.start?.line) || -1,
-          modified: true,
-          componentName,
-          paramName: 'props'
-        };
-
-        // Handle missing loc
-        const loc = (parent.node.type === 'VariableDeclarator' ? parent.node.loc : parent.parentPath.node.loc);
-        if (!loc || !loc.start) {
-          componentInfo.lineNumber = -1;
-        } else {
-          componentInfo.lineNumber = loc.start.line;
-        }
-
-        analyzeComponent(path, componentInfo);
-        const jsDoc = generateJsDoc(
-          componentInfo.name,
-          componentInfo.paramName,
-          Array.from(componentInfo.props),
-          componentInfo.hasSpreadProps
-        );
-
-        // Initialize components array if not exists
-        if (!propsCache.has(filename)) {
-          propsCache.set(filename, []);
-        }
-        propsCache.get(filename).push({
-          ...componentInfo,
-          jsDoc
-        });
-
-        // Mark component as processed
-        processedComponents.add(componentKey);
-      }
-    },
-    ExportDefaultDeclaration(path) {
-      const decl = path.node.declaration;
-      if (
-        decl.type === 'ArrowFunctionExpression' ||
-        decl.type === 'FunctionDeclaration' ||
-        decl.type === 'FunctionExpression'
-      ) {
-        // Check if it's a React Component
-        if (!isReactComponent(decl)) return;
-
-        // Skip if the function is inside another React component
-        if (isInsideAnotherReactComponent(path.get('declaration'))) {
-          return;
-        }
-
-        // Assign default name if anonymous, otherwise use existing name
-        const componentName = decl.id ? decl.id.name : 'DefaultExportComponent';
-
-        // Check if component already processed
-        const filename = path.hub.file.opts.filename;
-        const componentKey = `${filename}:${componentName}`;
-        if (processedComponents.has(componentKey)) {
-          return;
-        }
-
-        // Check if JSDoc already exists
-        const leadingComments = path.node.leadingComments;
-        if (leadingComments && leadingComments.some(comment =>
+        // Check existing JSDoc
+        const leadingComments = path.node.leadingComments || [];
+        if (leadingComments.some(comment =>
           comment.type === 'CommentBlock' && comment.value.includes('@component')
         )) {
           return;
         }
 
-        // Create componentInfo
+        const componentName = path.node.id.name;
         const componentInfo = {
           name: componentName,
           props: new Set(),
           hasSpreadProps: false,
-          lineNumber: path.node.loc?.start?.line || -1,
-          modified: true,
-          componentName,
-          paramName: 'props' // Add paramName
+          paramName: 'props'
         };
 
-        // Handle missing loc
-        const loc = path.node.loc;
-        if (!loc || !loc.start) {
-          componentInfo.lineNumber = -1;
-        } else {
-          componentInfo.lineNumber = loc.start.line;
-        }
-
-        analyzeComponent(path.get('declaration'), componentInfo);
-
+        analyzeComponent(path, componentInfo);
         const jsDoc = generateJsDoc(
           componentInfo.name,
-          componentInfo.paramName, // Pass paramName
+          componentInfo.paramName,
           Array.from(componentInfo.props),
           componentInfo.hasSpreadProps
         );
 
-        if (!propsCache.has(filename)) {
-          propsCache.set(filename, []);
+        // Check if it's in an export declaration
+        let insertionNode = path.node;
+        if (path.parentPath && path.parentPath.isExportNamedDeclaration()) {
+          insertionNode = path.parentPath.node;
         }
-        propsCache.get(filename).push({
-          ...componentInfo,
-          jsDoc
-        });
-        processedComponents.add(componentKey);
+
+        if (typeof insertionNode.start === 'number') {
+          this.insertionPoints.push({
+            start: insertionNode.start,
+            text: jsDoc + '\n'
+          });
+        }
+      },
+
+      ArrowFunctionExpression(path) {
+        if (!isReactComponent(path.node)) return;
+        if (isInsideAnotherReactComponent(path)) return;
+
+        const declaratorPath = path.findParent(p => p.isVariableDeclarator());
+        if (!declaratorPath) return;
+
+        const declarationPath = declaratorPath.parentPath;
+        let insertionNode;
+
+        // Check if it's in an export declaration
+        if (declarationPath.parentPath && declarationPath.parentPath.isExportNamedDeclaration()) {
+          insertionNode = declarationPath.parentPath.node;
+        } else if (declarationPath.isVariableDeclaration()) {
+          insertionNode = declarationPath.node;
+        }
+
+        if (!insertionNode) return;
+
+        let componentName;
+        if (declaratorPath.node.id.type === 'Identifier') {
+          componentName = declaratorPath.node.id.name;
+        } else {
+          componentName = `AnonymousComponent_${Date.now()}`;
+        }
+
+        // Check existing JSDoc
+        const leadingComments = insertionNode.leadingComments || [];
+        if (leadingComments.some(comment =>
+          comment.type === 'CommentBlock' && comment.value.includes('@component')
+        )) {
+          return;
+        }
+
+        const componentInfo = {
+          name: componentName,
+          props: new Set(),
+          hasSpreadProps: false,
+          paramName: 'props'
+        };
+
+        analyzeComponent(path, componentInfo);
+        const jsDoc = generateJsDoc(
+          componentInfo.name,
+          componentInfo.paramName,
+          Array.from(componentInfo.props),
+          componentInfo.hasSpreadProps
+        );
+
+        if (typeof insertionNode.start === 'number') {
+          this.insertionPoints.push({
+            start: insertionNode.start,
+            text: jsDoc + '\n'
+          });
+        }
+      },
+
+      ExportDefaultDeclaration(path) {
+        const decl = path.node.declaration;
+        if (
+          decl.type === 'ArrowFunctionExpression' ||
+          decl.type === 'FunctionDeclaration' ||
+          decl.type === 'FunctionExpression'
+        ) {
+          if (!isReactComponent(decl)) return;
+          if (isInsideAnotherReactComponent(path.get('declaration'))) return;
+
+          const componentName = decl.id ? decl.id.name : 'DefaultExportComponent';
+
+          // Check existing JSDoc
+          const leadingComments = path.node.leadingComments || [];
+          if (leadingComments.some(comment =>
+            comment.type === 'CommentBlock' && comment.value.includes('@component')
+          )) {
+            return;
+          }
+
+          const componentInfo = {
+            name: componentName,
+            props: new Set(),
+            hasSpreadProps: false,
+            paramName: 'props'
+          };
+
+          analyzeComponent(path.get('declaration'), componentInfo);
+          const jsDoc = generateJsDoc(
+            componentInfo.name,
+            componentInfo.paramName,
+            Array.from(componentInfo.props),
+            componentInfo.hasSpreadProps
+          );
+
+          // Use the start of ExportDefaultDeclaration
+          if (typeof path.node.start === 'number') {
+            this.insertionPoints.push({
+              start: path.node.start,
+              text: jsDoc + '\n'
+            });
+          }
+        }
       }
+    },
+    post(file) {
+      file.metadata.insertionPoints = this.insertionPoints;
     }
-  }
-};
+  };
+}
 
 /**
  * check whether the block contains return JSX
@@ -527,7 +469,7 @@ function generateJsDoc(componentName, paramName, props, hasSpreadProps) {
   });
 
   if (spreadProps) {
-    const restName = spreadProps.slice(3); // Remove '...' prefix
+    const restName = spreadProps.slice(3);
     doc += ` * @param {Object} ${paramName}.${restName} - [auto generate]\n`;
   } else if (hasSpreadProps) {
     doc += ` * @param {Object} ${paramName}.rest - [auto generate]\n`;
@@ -539,121 +481,72 @@ function generateJsDoc(componentName, paramName, props, hasSpreadProps) {
   return doc;
 }
 
+// New helper function to format JSDoc for addComment
+function formatToBlockComment(fullJsDocString) {
+  return fullJsDocString
+    .replace(/^\/\*\*/, '')
+    .replace(/\*\/$/, '')
+    .trim();
+}
+
 /**
  * @param {string} directory
  */
 async function generateDocs(directory) {
   try {
-    // Reset all states
-    processedComponents.clear();
-    propsCache.clear(); // Add this line to ensure the cache starts empty each time
-    
     console.log('🔍 Scanning directory:', directory);
-    const files = glob.sync('**/*.{js,jsx}', { 
+    const files = glob.sync('**/*.{js,jsx}', {
       cwd: directory,
       absolute: true
     });
-    
+
     if (files.length === 0) {
-      console.log('⚠️ No JavaScript/React files found in directory');
-      console.log('Looking in:', directory);
+      console.log('⚠️ No JavaScript/React files found');
       return;
     }
 
-    console.log(`📝 Found ${files.length} files to process...`);
-    
-    let processedCount = 0;
-    let skippedCount = 0;
-    
+    console.log(`📝 Found ${files.length} files...`);
+
     for (const file of files) {
-      const absolutePath = path.resolve(file);
-      let code = fs.readFileSync(file, 'utf-8');
-      
+      const code = fs.readFileSync(file, 'utf-8');
       try {
-        // Clear processed components before processing each file
-        processedComponents.clear();
-        
         const result = await babel.transformAsync(code, {
-          filename: absolutePath,
-          plugins: [reactJsDocPlugin],
+          filename: file,
+          plugins: [reactJsDocPlugin()],
           parserOpts: {
             plugins: ['jsx'],
             sourceType: 'module',
-            attachComment: true,
-            tokens: true,
-          },
-          generatorOpts: {
             comments: true,
-            retainLines: true,
+            tokens: true,
+            ranges: true
           },
           babelrc: false,
           configFile: false
         });
 
-        const components = propsCache.get(absolutePath) || [];
-        if (result && components.length > 0) {
-          // Sort components by line number in descending order
-          components.sort((a, b) => b.lineNumber - a.lineNumber);
+        const insertionPoints = result.metadata.insertionPoints || [];
+        
+        if (insertionPoints.length > 0) {
+          console.log(`Found ${insertionPoints.length} insertion points in ${file}`);
           
-          const lines = code.split('\n');
+          // Use descending order
+          insertionPoints.sort((a, b) => b.start - a.start);
           
-          // Add JSDoc for each component from bottom to top
-          for (const component of components) {
-            const idx = component.lineNumber - 1;
-
-            // Check if lineNumber is valid
-            if (idx < 0 || idx >= lines.length) {
-              console.warn(`Line number [${component.lineNumber}] is out of range in file: ${file}`);
-              continue; // Skip this component
-            }
-
-            const componentLine = lines[idx];
-
-            // Check if componentLine is a valid string
-            if (typeof componentLine !== 'string') {
-              console.warn(`Line content is not a valid string for line ${component.lineNumber} in file: ${file}`);
-              continue; // Skip this component
-            }
-
-            const prevLines = lines.slice(Math.max(0, idx - 10), idx).join('\n');
-            if (prevLines.includes('@component')) {
-              console.log(`Skipping ${component.name} - JSDoc already exists`);
-              continue;
-            }
-
-            const indentation = componentLine.match(/^\s*/)[0];
-            const jsDocLines = component.jsDoc.split('\n')
-              .map(line => indentation + line)
-              .join('\n');
-
-            if (idx > 0 && lines[idx - 1].trim() !== '') {
-              lines.splice(idx, 0, '', jsDocLines);
-            } else {
-              lines.splice(idx, 0, jsDocLines);
-            }
+          const s = new MagicString(code);
+          
+          for (const point of insertionPoints) {
+            s.prependLeft(point.start, point.text);
           }
-          
-          code = lines.join('\n').replace(/\r\n/g, '\n');
-          fs.writeFileSync(file, code);
-          console.log(`✅ Generated JSDoc for ${components.length} components in ${file}`);
-          processedCount++;
-        } else {
-          console.log(`⚠️ Skipped ${file} - No React components found or already documented`);
-          skippedCount++;
+
+          fs.writeFileSync(file, s.toString(), 'utf-8');
+          console.log(`✅ Processed: ${file}`);
         }
-      } catch (error) {
-        console.error(`❌ Error processing ${file}:`, error.message);
-        skippedCount++;
+      } catch (err) {
+        console.error(`❌ Error processing ${file}:`, err.message);
       }
     }
-
-    console.log('\n📊 Summary:');
-    console.log(`Total files found: ${files.length}`);
-    console.log(`Files updated: ${processedCount}`);
-    console.log(`Files skipped: ${skippedCount}`);
-
   } catch (error) {
-    console.error('❌ Error during generation:', error);
+    console.error('❌ Error:', error);
     throw error;
   }
 }
