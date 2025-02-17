@@ -102,7 +102,7 @@ describe('generateDocs', () => {
   ];
 
   testCases.forEach(({ name, file, description }) => {
-    test(`should generate JSDoc for ${name}: ${description}`, async () => {
+    it(`should generate JSDoc for ${name}: ${description}`, async () => {
       // Run the generator
       await generateDocs(componentsDir);
       
@@ -119,7 +119,7 @@ describe('generateDocs', () => {
     });
   });
 
-  test('should not modify files with existing JSDoc', async () => {
+  it('should not modify files with existing JSDoc', async () => {
     const file = 'ButtonWithJSDoc.jsx';
     const initialContent = fs.readFileSync(path.join(componentsDir, file), 'utf-8');
     
@@ -129,7 +129,7 @@ describe('generateDocs', () => {
     expect(actual).toBe(initialContent);
   });
 
-  test('should handle multiple components in a single file', async () => {
+  it('should handle multiple components in a single file', async () => {
     const file = 'MultipleComponents.jsx';
     
     await generateDocs(componentsDir);
