@@ -1,5 +1,11 @@
 # @quick-gen/react
 
+## 0.3.2
+
+### Patch Changes
+
+- add calculate log
+
 ## 0.3.1
 
 ### Patch Changes
