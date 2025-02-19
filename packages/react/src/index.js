@@ -264,6 +264,12 @@ async function generateDocs(directory) {
     }
 
     console.log(`📝 Found ${files.length} files...`);
+    
+    // Calculate the number of files
+    let processedFiles = 0;
+    let modifiedFiles = 0;
+    let errorFiles = 0;
+    let skippedFiles = 0;
 
     for (const file of files) {
       const code = fs.readFileSync(file, 'utf-8');
@@ -283,6 +289,7 @@ async function generateDocs(directory) {
         });
 
         const insertionPoints = result.metadata.insertionPoints || [];
+        processedFiles++;
         
         if (insertionPoints.length > 0) {
           console.log(`Found ${insertionPoints.length} insertion points in ${file}`);
@@ -298,11 +305,25 @@ async function generateDocs(directory) {
 
           fs.writeFileSync(file, s.toString(), 'utf-8');
           console.log(`✅ Processed: ${file}`);
+          modifiedFiles++;
+        } else {
+          skippedFiles++;
+          console.log(`⏭️ Skipped: ${file} (JSDoc already exists)`);
         }
       } catch (err) {
         console.error(`❌ Error processing ${file}:`, err.message);
+        errorFiles++;
       }
     }
+
+    // Add summary
+    console.log('\n📊 Summary:');
+    console.log(`Total files scanned: ${files.length}`);
+    console.log(`Successfully processed: ${processedFiles}`);
+    console.log(`Files with added JSDoc: ${modifiedFiles}`);
+    console.log(`Files skipped (already documented): ${skippedFiles}`);
+    console.log(`Files with errors: ${errorFiles}`);
+
   } catch (error) {
     console.error('❌ Error:', error);
     throw error;
