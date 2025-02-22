@@ -1,5 +1,11 @@
 # @quick-gen/react
 
+## 0.3.3
+
+### Patch Changes
+
+- add the more case check
+
 ## 0.3.2
 
 ### Patch Changes
