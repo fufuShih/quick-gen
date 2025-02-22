@@ -99,6 +99,99 @@ function reactJsDocPlugin() {
       this.insertionPoints = [];
     },
     visitor: {
+      CallExpression(path) {
+        // if this CallExpression is memo(...) or forwardRef(...)
+        // we treat it as the outermost layer of a component wrapped in a function
+        const callee = path.node.callee;
+        if (
+          callee.type !== 'Identifier' ||
+          (callee.name !== 'memo' && callee.name !== 'forwardRef')
+        ) {
+          return;
+        }
+  
+        // Get the first argument: it could be an ArrowFunctionExpression or FunctionExpression
+        const wrappedFn = path.node.arguments[0];
+        if (!wrappedFn) return; // If no arguments, skip
+  
+        // Check if the inner wrapped function is a React Component
+        // Use helper: isReactComponent(wrappedFn)
+        if (!isReactComponent(wrappedFn)) {
+          return;
+        }
+  
+        // If it's already nested in another React Component, skip
+        if (isInsideAnotherReactComponent(path)) {
+          return;
+        }
+  
+        // Find the outermost place to declare this Memo variable (VariableDeclarator or Export)
+        // Similar to ArrowFunctionExpression
+        const declaratorPath = path.findParent(p => p.isVariableDeclarator());
+        if (!declaratorPath) {
+          return;
+        }
+  
+        const declarationPath = declaratorPath.parentPath; // Usually a VariableDeclaration
+        let insertionNode;
+        if (
+          declarationPath.parentPath &&
+          declarationPath.parentPath.isExportNamedDeclaration()
+        ) {
+          insertionNode = declarationPath.parentPath.node;
+        } else if (declarationPath.isVariableDeclaration()) {
+          insertionNode = declarationPath.node;
+        }
+        if (!insertionNode) return;
+  
+        // Check if there's already the same JSDoc
+        const leadingComments = insertionNode.leadingComments || [];
+        if (
+          leadingComments.some(
+            (comment) =>
+              comment.type === 'CommentBlock' &&
+              comment.value.includes('@component')
+          )
+        ) {
+          return;
+        }
+  
+        // Determine the component name (e.g. MemoButton)
+        let componentName;
+        if (declaratorPath.node.id.type === 'Identifier') {
+          componentName = declaratorPath.node.id.name;
+        } else {
+          componentName = `AnonymousComponent_${Date.now()}`;
+        }
+  
+        // Analyze props
+        // Note: analyzeComponent() must receive the path of the ArrowFunctionExpression, 
+        // so we can temporarily get the NodePath from callExpression.arguments[0]
+        const wrappedFnPath = path.get('arguments.0');
+        const componentInfo = {
+          name: componentName,
+          props: new Set(),
+          hasSpreadProps: false,
+          paramName: 'props'
+        };
+  
+        analyzeComponent(wrappedFnPath, componentInfo);
+  
+        const jsDoc = generateJsDoc(
+          componentInfo.name,
+          componentInfo.paramName,
+          Array.from(componentInfo.props),
+          componentInfo.hasSpreadProps
+        );
+  
+        if (typeof insertionNode.start === 'number') {
+          this.insertionPoints.push({
+            start: insertionNode.start,
+            text: jsDoc + '\n'
+          });
+        }
+      },
+
       FunctionDeclaration(path) {
         if (path.findParent((p) => p.isExportDefaultDeclaration())) return;
 
