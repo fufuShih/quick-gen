@@ -100,6 +100,8 @@ function reactJsDocPlugin() {
     },
     visitor: {
       FunctionDeclaration(path) {
+        if (path.findParent((p) => p.isExportDefaultDeclaration())) return;
+
         if (!isReactComponent(path.node)) return;
         if (isInsideAnotherReactComponent(path)) return;
         if (!path.node.id) return;
@@ -143,6 +145,8 @@ function reactJsDocPlugin() {
       },
 
       ArrowFunctionExpression(path) {
+        if (path.findParent((p) => p.isExportDefaultDeclaration())) return;
+
         if (!isReactComponent(path.node)) return;
         if (isInsideAnotherReactComponent(path)) return;
 
