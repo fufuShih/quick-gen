@@ -1,5 +1,11 @@
 # @quick-gen/react
 
+## 0.3.4
+
+### Patch Changes
+
+- Update the document
+
 ## 0.3.3
 
 ### Patch Changes
