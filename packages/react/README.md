@@ -9,22 +9,25 @@ A powerful tool that automatically generates comprehensive JSDoc documentation f
 
 - 🔍 **Intelligent Component Detection**: 
   - Automatically detects React components in your codebase
-  - Supports function declarations, arrow functions, and memo components
+  - Supports function declarations, arrow functions, and memo/forwardRef components
   - Skips components that already have JSDoc comments
+  - Handles default exports and named exports
 - 📝 **Smart Props Analysis**:
   - Detects props from object destructuring patterns
-  - Identifies props usage in component body
+  - Identifies props usage throughout component body
   - Recognizes spread props usage (`...props`, `...rest`)
-  - Preserves existing JSDoc comments
+  - Handles nested component structures
 - 🎯 **Component Support**:
   - Function declarations (`function Button() {}`)
   - Arrow function components (`const Button = () => {}`)
   - Memo wrapped components (`memo(Button)`)
+  - ForwardRef components (`forwardRef((props, ref) => {})`)
   - Multiple components in a single file
 - 🚀 **Non-Intrusive**: 
   - Preserves existing JSDoc comments
   - Only adds documentation where needed
   - Maintains code formatting and indentation
+  - Provides detailed console output during generation
 
 ## 📦 Installation
 
@@ -44,8 +47,14 @@ pnpm add -D @quick-gen/react
 ### Command Line Interface
 
 ```bash
-# Using npx
-npx quick-gen react src/components
+# Basic usage - scans src directory by default
+npx quick-gen-react
+
+# Specify custom directory
+npx quick-gen-react -d src/components
+
+# Get help
+npx quick-gen-react --help
 ```
 
 ### Integration with package.json
@@ -55,7 +64,7 @@ Add a script to your package.json:
 ```json
 {
   "scripts": {
-    "generate-docs": "quick-gen-react -d 'src/components'"
+    "generate-docs": "quick-gen-react -d src/components"
   }
 }
 ```
@@ -65,10 +74,11 @@ Add a script to your package.json:
 | Option   | Alias | Description                            | Default |
 | -------- | ----- | -------------------------------------- | ------- |
 | `--dir`  | `-d`  | Directory to scan for React components | `"src"` |
+| `--help` | `-h`  | Show help                              | -       |
 
 ## 📝 Examples
 
-### Basic Component
+### Basic Function Component
 
 **Input:**
 ```jsx
@@ -84,44 +94,16 @@ const Button = ({ onClick, children, disabled }) => {
 **Output:**
 ```jsx
 /**
+ * @generated 1700000000000
  * @component Button
- * @description React component
+ *
  * @param {Object} props Component props
- * @param {*} props.onClick - onClick prop
- * @param {*} props.children - children prop
- * @param {*} props.disabled - disabled prop
+ * @param {*} props.onClick - [auto generate]
+ * @param {*} props.children - [auto generate]
+ * @param {*} props.disabled - [auto generate]
  * @returns {JSX.Element} React component
  */
 const Button = ({ onClick, children, disabled }) => {
-  // ... component implementation
-};
-```
-
-### Component with Spread Props
-
-**Input:**
-```jsx
-const Button = ({ onClick, children, ...rest }) => {
-  return (
-    <button onClick={onClick} {...rest}>
-      {children}
-    </button>
-  );
-};
-```
-
-**Output:**
-```jsx
-/**
- * @component Button
- * @description React component
- * @param {Object} props Component props
- * @param {*} props.onClick - onClick prop
- * @param {*} props.children - children prop
- * @param {Object} props.rest - Additional props are spread
- * @returns {JSX.Element} React component
- */
-const Button = ({ onClick, children, ...rest }) => {
   // ... component implementation
 };
 ```
