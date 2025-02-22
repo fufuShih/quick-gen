@@ -64,11 +64,11 @@ describe('generateDocs', () => {
       description: 'Component with a function'
     },
     // FIXME: memo component is not working
-    // {
-    //   name: 'memo component',
-    //   file: 'MemoButton.jsx',
-    //   description: 'React memo component'
-    // },
+    {
+      name: 'memo component',
+      file: 'MemoButton.jsx',
+      description: 'React memo component'
+    },
     {
       name: 'component with function',
       file: 'ComponentWithFunction.jsx',
@@ -98,6 +98,11 @@ describe('generateDocs', () => {
       name: 'component with conditional rendering',
       file: 'ComponentWithConditional3.jsx',
       description: 'Component with conditional rendering'
+    },
+    {
+      name: 'component with default function',
+      file: 'ComponentDefaultFunction.jsx',
+      description: 'Component with default function'
     },
   ];
 
