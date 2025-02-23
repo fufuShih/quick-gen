@@ -60,6 +60,124 @@ describe('helper.js', () => {
       };
       expect(isReactComponent(node)).toBe(true);
     });
+
+    it('should return true for a wrapped component (forwardRef)', () => {
+      const node = {
+        type: 'CallExpression',
+        callee: { type: 'Identifier', name: 'forwardRef' },
+        arguments: [
+          {
+            type: 'ArrowFunctionExpression',
+            body: { type: 'JSXElement' }
+          }
+        ]
+      };
+      expect(isReactComponent(node)).toBe(true);
+    });
+
+    it('should return true for a FunctionExpression returning JSX', () => {
+      const node = {
+        type: 'FunctionExpression',
+        body: {
+          type: 'BlockStatement',
+          body: [
+            {
+              type: 'ReturnStatement',
+              argument: { type: 'JSXElement' }
+            }
+          ]
+        }
+      };
+      expect(isReactComponent(node)).toBe(true);
+    });
+
+    it('should return true when JSX is returned in an if/else block', () => {
+      const node = {
+        type: 'FunctionDeclaration',
+        body: {
+          type: 'BlockStatement',
+          body: [
+            {
+              type: 'IfStatement',
+              test: { type: 'Identifier', name: 'condition' },
+              consequent: {
+                type: 'BlockStatement',
+                body: [
+                  {
+                    type: 'ReturnStatement',
+                    argument: { type: 'JSXElement' }
+                  }
+                ]
+              },
+              alternate: {
+                type: 'BlockStatement',
+                body: [
+                  {
+                    type: 'ReturnStatement',
+                    argument: { type: 'JSXElement' }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      };
+      expect(isReactComponent(node)).toBe(true);
+    });
+
+    it('should return true when JSX is in a conditional expression', () => {
+      const node = {
+        type: 'ArrowFunctionExpression',
+        body: {
+          type: 'ConditionalExpression',
+          test: { type: 'Identifier', name: 'condition' },
+          consequent: { type: 'JSXElement' },
+          alternate: { type: 'JSXElement' }
+        }
+      };
+      expect(isReactComponent(node)).toBe(true);
+    });
+
+    it('should return true when JSX is in a logical expression', () => {
+      const node = {
+        type: 'ArrowFunctionExpression',
+        body: {
+          type: 'LogicalExpression',
+          operator: '&&',
+          left: { type: 'Identifier', name: 'condition' },
+          right: { type: 'JSXElement' }
+        }
+      };
+      expect(isReactComponent(node)).toBe(true);
+    });
+
+    it('should return true when JSX is in a switch statement', () => {
+      const node = {
+        type: 'FunctionDeclaration',
+        body: {
+          type: 'BlockStatement',
+          body: [
+            {
+              type: 'SwitchStatement',
+              discriminant: { type: 'Identifier', name: 'value' },
+              cases: [
+                {
+                  type: 'SwitchCase',
+                  test: { type: 'StringLiteral', value: 'test' },
+                  consequent: [
+                    {
+                      type: 'ReturnStatement',
+                      argument: { type: 'JSXElement' }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      };
+      expect(isReactComponent(node)).toBe(true);
+    });
   });
 
   describe('generateJsDoc', () => {
