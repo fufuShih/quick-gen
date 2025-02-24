@@ -93,16 +93,18 @@ const Button = ({ onClick, children, disabled }) => {
 
 **Output:**
 ```jsx
-/**
+/** 
  * @generated 1700000000000
- * @component Button
- *
- * @param {Object} props Component props
- * @param {*} props.onClick - [auto generate]
- * @param {*} props.children - [auto generate]
- * @param {*} props.disabled - [auto generate]
- * @returns {JSX.Element} React component
+ * @typedef {any} AutoGen
+ * 
+ * @typedef {{
+ *   onClick: AutoGen,
+ *   children: AutoGen,
+ *   disabled: AutoGen
+ * }} ButtonProps
  */
+
+/** @type {(props: ButtonProps) => JSX.Element} */
 const Button = ({ onClick, children, disabled }) => {
   // ... component implementation
 };
