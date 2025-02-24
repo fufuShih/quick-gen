@@ -64,7 +64,8 @@ Add a script to your package.json:
 ```json
 {
   "scripts": {
-    "generate-docs": "quick-gen-react -d src/components"
+  "generate-docs": "quick-gen-react -d src/components",
+  "update-docs": "quick-gen-react -d src/components --update"
   }
 }
 ```
@@ -74,6 +75,7 @@ Add a script to your package.json:
 | Option   | Alias | Description                            | Default |
 | -------- | ----- | -------------------------------------- | ------- |
 | `--dir`  | `-d`  | Directory to scan for React components | `"src"` |
+| `--update` | `-u`  | Update existing @generated JSDoc (only modifies AutoGen props)   | `false` |
 | `--help` | `-h`  | Show help                              | -       |
 
 ## 📝 Examples
