@@ -2,13 +2,15 @@ import { memo } from 'react';
 
 /**
  * @generated 1700000000000
- * @component MemoButton
+ * @typedef {any} AutoGen
  *
- * @param {Object} props Component props
- * @param {*} props.onClick - [auto generate]
- * @param {*} props.label - [auto generate]
- * @returns {JSX.Element} React component
+ * @typedef {{
+ *  onClick: AutoGen,
+ *  label: AutoGen,
+ * }} MemoButtonProps
  */
+
+/** @type {(props: MemoButtonProps) => JSX.Element} */
 const MemoButton = memo(({ onClick, label }) => {
   return (
     <button onClick={onClick}>

@@ -1,13 +1,15 @@
 /**
  * @generated 1700000000000
- * @component ButtonWithJSDoc
+ * @typedef {any} AutoGen
  *
- * @param {Object} props Component props
- * @param {*} props.onClick - [auto generate]
- * @param {*} props.children - [auto generate]
- * @param {*} props.disabled - [auto generate]
- * @returns {JSX.Element} React component
+ * @typedef {{
+ *  onClick: AutoGen,
+ *  children: AutoGen,
+ *  disabled: AutoGen,
+ * }} ButtonWithJSDocProps
  */
+
+/** @type {(props: ButtonWithJSDocProps) => JSX.Element} */
 const ButtonWithJSDoc = ({ onClick, children, disabled }) => {
   return (
     <button 

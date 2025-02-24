@@ -1,13 +1,15 @@
 // This component doesn't have JSDoc yet
 /**
  * @generated 1700000000000
- * @component HeaderButton
+ * @typedef {any} AutoGen
  *
- * @param {Object} props Component props
- * @param {*} props.onClick - [auto generate]
- * @param {*} props.text - [auto generate]
- * @returns {JSX.Element} React component
+ * @typedef {{
+ *  onClick: AutoGen,
+ *  text: AutoGen,
+ * }} HeaderButtonProps
  */
+
+/** @type {(props: HeaderButtonProps) => JSX.Element} */
 const HeaderButton = ({ onClick, text }) => {
   return (
     <button onClick={onClick}>
@@ -19,13 +21,15 @@ const HeaderButton = ({ onClick, text }) => {
 // This component doesn't have JSDoc yet
 /**
  * @generated 1700000000000
- * @component ContentButton
+ * @typedef {any} AutoGen
  *
- * @param {Object} props Component props
- * @param {*} props.onClick - [auto generate]
- * @param {*} props.children - [auto generate]
- * @returns {JSX.Element} React component
+ * @typedef {{
+ *  onClick: AutoGen,
+ *  children: AutoGen,
+ * }} ContentButtonProps
  */
+
+/** @type {(props: ContentButtonProps) => JSX.Element} */
 const ContentButton = ({ onClick, children }) => {
   return (
     <button onClick={onClick} className="content-btn">
@@ -58,14 +62,16 @@ const FooterButton = ({ onClick, label, disabled }) => {
 // This component doesn't have JSDoc yet
 /**
  * @generated 1700000000000
- * @component SidebarButton
+ * @typedef {any} AutoGen
  *
- * @param {Object} props Component props
- * @param {*} props.onClick - [auto generate]
- * @param {*} props.icon - [auto generate]
- * @param {*} props.text - [auto generate]
- * @returns {JSX.Element} React component
+ * @typedef {{
+ *  onClick: AutoGen,
+ *  icon: AutoGen,
+ *  text: AutoGen,
+ * }} SidebarButtonProps
  */
+
+/** @type {(props: SidebarButtonProps) => JSX.Element} */
 const SidebarButton = (props) => {
   const { onClick, icon, text } = props;
   

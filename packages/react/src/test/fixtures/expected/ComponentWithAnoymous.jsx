@@ -1,8 +1,10 @@
 /**
  * @generated 1700000000000
- * @component DefaultExportComponent
+ * @typedef {any} AutoGen
  *
- * @param {Object} props Component props
- * @returns {JSX.Element} React component
+ * @typedef {{
+ * }} DefaultExportComponentProps
  */
+
+/** @type {(props: DefaultExportComponentProps) => JSX.Element} */
 export default () => <div>Anonymous Component</div>;

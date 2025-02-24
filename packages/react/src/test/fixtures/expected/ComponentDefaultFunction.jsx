@@ -1,11 +1,13 @@
 /**
  * @generated 1700000000000
- * @component ComponentDefaultFunction
+ * @typedef {any} AutoGen
  *
- * @param {Object} props Component props
- * @param {*} props.textContent - [auto generate]
- * @returns {JSX.Element} React component
+ * @typedef {{
+ *  textContent: AutoGen,
+ * }} ComponentDefaultFunctionProps
  */
+
+/** @type {(props: ComponentDefaultFunctionProps) => JSX.Element} */
 export default function ComponentDefaultFunction(props) {
 	return (
 		<div>

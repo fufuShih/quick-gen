@@ -1,11 +1,13 @@
 /**
  * @generated 1700000000000
- * @component DataComponent
+ * @typedef {any} AutoGen
  *
- * @param {Object} data Component props
- * @param {*} data.title - [auto generate]
- * @returns {JSX.Element} React component
+ * @typedef {{
+ *  title: AutoGen,
+ * }} DataComponentProps
  */
+
+/** @type {(data: DataComponentProps) => JSX.Element} */
 const DataComponent = (data) => {
     return <div>{data.title}</div>;
 };

@@ -1,13 +1,15 @@
 /**
  * @generated 1700000000000
- * @component ComponentWithConditional3
+ * @typedef {any} AutoGen
  *
- * @param {Object} props Component props
- * @param {*} props.flag - [auto generate]
- * @param {*} props.name - [auto generate]
- * @param {*} props.useBlock - [auto generate]
- * @returns {JSX.Element} React component
+ * @typedef {{
+ *  flag: AutoGen,
+ *  name: AutoGen,
+ *  useBlock: AutoGen,
+ * }} ComponentWithConditional3Props
  */
+
+/** @type {(props: ComponentWithConditional3Props) => JSX.Element} */
 const ComponentWithConditional3 = ({ flag, name, useBlock }) => {
   if (useBlock) {
     if (flag) {

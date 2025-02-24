@@ -1,13 +1,15 @@
 /**
  * @generated 1700000000000
- * @component FunctionButton
+ * @typedef {any} AutoGen
  *
- * @param {Object} props Component props
- * @param {*} props.type - [auto generate]
- * @param {*} props.onClick - [auto generate]
- * @param {*} props.children - [auto generate]
- * @returns {JSX.Element} React component
+ * @typedef {{
+ *  type: AutoGen,
+ *  onClick: AutoGen,
+ *  children: AutoGen,
+ * }} FunctionButtonProps
  */
+
+/** @type {(props: FunctionButtonProps) => JSX.Element} */
 function FunctionButton({ type, onClick, children }) {
   return (
     <button type={type} onClick={onClick}>

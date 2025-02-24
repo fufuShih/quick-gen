@@ -1,12 +1,14 @@
 /**
  * @generated 1700000000000
- * @component ComponentWithConditional
+ * @typedef {any} AutoGen
  *
- * @param {Object} props Component props
- * @param {*} props.bigWinWinner - [auto generate]
- * @param {*} props.isLoading - [auto generate]
- * @returns {JSX.Element} React component
+ * @typedef {{
+ *  bigWinWinner: AutoGen,
+ *  isLoading: AutoGen,
+ * }} ComponentWithConditionalProps
  */
+
+/** @type {(props: ComponentWithConditionalProps) => JSX.Element} */
 export const ComponentWithConditional = (props) => {
   const { bigWinWinner, isLoading } = props;
   return isLoading || !bigWinWinner ? (
