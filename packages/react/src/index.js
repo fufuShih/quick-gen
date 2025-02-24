@@ -92,6 +92,16 @@ function analyzeComponent(path, componentInfo) {
 }
 
 /**
+ * Helper function to check if a comment is a JSDoc
+ * @param {Object} comment - The comment object from Babel
+ * @returns {boolean}
+ */
+function isJSDoc(comment) {
+  return comment.type === 'CommentBlock' && 
+         comment.value.trim().startsWith('*');
+}
+
+/**
  * @type {import('@babel/core').PluginObj}
  */
 function reactJsDocPlugin(options = {}) {
@@ -145,16 +155,38 @@ function reactJsDocPlugin(options = {}) {
         }
         if (!insertionNode) return;
   
-        // Check if there's already the same JSDoc
+        // Check if there's already a JSDoc
         const leadingComments = insertionNode.leadingComments || [];
-        if (
-          leadingComments.some(
-            (comment) =>
-              comment.type === 'CommentBlock' &&
-              comment.value.includes('@component')
-          )
-        ) {
-          return;
+        const existingJSDoc = leadingComments.find(isJSDoc);
+
+        if (existingJSDoc) {
+          // If in update mode and has @generated, update the JSDoc
+          if (options.update && existingJSDoc.value.includes('@generated')) {
+            const parsedDoc = parseJSDoc(existingJSDoc.value);
+            if (parsedDoc) {
+              const componentInfo = {
+                name: componentName,
+                props: new Set(),
+                hasSpreadProps: false,
+                paramName: 'props'
+              };
+
+              analyzeComponent(wrappedFnPath, componentInfo);
+              
+              updateParsedJSDoc(
+                parsedDoc, 
+                Array.from(componentInfo.props)
+              );
+
+              const updatedJSDoc = serializeJSDoc(parsedDoc);
+              
+              this.insertionPoints.push({
+                start: insertionNode.start,
+                text: updatedJSDoc + '\n'
+              });
+            }
+          }
+          return; // Skip if has JSDoc but not updating
         }
   
         // Determine the component name (e.g. MemoButton)
@@ -202,9 +234,34 @@ function reactJsDocPlugin(options = {}) {
 
         // Check existing JSDoc
         const leadingComments = path.node.leadingComments || [];
-        if (leadingComments.some(comment =>
-          comment.type === 'CommentBlock' && comment.value.includes('@component')
-        )) {
+        const existingJSDoc = leadingComments.find(isJSDoc);
+
+        if (existingJSDoc) {
+          if (options.update && existingJSDoc.value.includes('@generated')) {
+            const parsedDoc = parseJSDoc(existingJSDoc.value);
+            if (parsedDoc) {
+              const componentInfo = {
+                name: componentName,
+                props: new Set(),
+                hasSpreadProps: false,
+                paramName: 'props'
+              };
+
+              analyzeComponent(path, componentInfo);
+              
+              updateParsedJSDoc(
+                parsedDoc, 
+                Array.from(componentInfo.props)
+              );
+
+              const updatedJSDoc = serializeJSDoc(parsedDoc);
+              
+              this.insertionPoints.push({
+                start: insertionNode.start,
+                text: updatedJSDoc + '\n'
+              });
+            }
+          }
           return;
         }
 
@@ -268,14 +325,9 @@ function reactJsDocPlugin(options = {}) {
 
         // Get existing comments
         const leadingComments = insertionNode.leadingComments || [];
-        const existingJSDoc = leadingComments.find(
-          comment => comment.type === 'CommentBlock' && 
-                     (comment.value.includes('@component') || 
-                      comment.value.includes('@typedef'))
-        );
+        const existingJSDoc = leadingComments.find(isJSDoc);
 
         if (existingJSDoc) {
-          // If in update mode and has @generated, update the JSDoc
           if (options.update && existingJSDoc.value.includes('@generated')) {
             const parsedDoc = parseJSDoc(existingJSDoc.value);
             if (parsedDoc) {
@@ -301,7 +353,7 @@ function reactJsDocPlugin(options = {}) {
               });
             }
           }
-          return; // Skip if has JSDoc but not updating
+          return;
         }
 
         // Generate new JSDoc if none exists
@@ -342,12 +394,38 @@ function reactJsDocPlugin(options = {}) {
 
           // Check existing JSDoc
           const leadingComments = path.node.leadingComments || [];
-          if (leadingComments.some(comment =>
-            comment.type === 'CommentBlock' && comment.value.includes('@component')
-          )) {
+          const existingJSDoc = leadingComments.find(isJSDoc);
+
+          if (existingJSDoc) {
+            if (options.update && existingJSDoc.value.includes('@generated')) {
+              const parsedDoc = parseJSDoc(existingJSDoc.value);
+              if (parsedDoc) {
+                const componentInfo = {
+                  name: componentName,
+                  props: new Set(),
+                  hasSpreadProps: false,
+                  paramName: 'props'
+                };
+
+                analyzeComponent(path.get('declaration'), componentInfo);
+                
+                updateParsedJSDoc(
+                  parsedDoc, 
+                  Array.from(componentInfo.props)
+                );
+
+                const updatedJSDoc = serializeJSDoc(parsedDoc);
+                
+                this.insertionPoints.push({
+                  start: path.node.start,
+                  text: updatedJSDoc + '\n'
+                });
+              }
+            }
             return;
           }
 
+          // Generate new JSDoc if none exists
           const componentInfo = {
             name: componentName,
             props: new Set(),
