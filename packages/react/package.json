@@ -12,6 +12,7 @@
   "files": [
     "src/index.js",
     "src/helper.js",
+    "src/jsdoc-parser.js",
     "bin/cli.js",
     "README.md",
     ".babelrc",

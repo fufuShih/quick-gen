@@ -14,10 +14,18 @@ yargs(hideBin(process.argv))
         description: 'Directory to scan for React components',
         default: 'src',
         coerce: (dir) => normalize(dir)
+      })
+      .option('update', {
+        alias: 'u',
+        type: 'boolean',
+        description: 'Update existing @generated JSDoc (only modifies AutoGen props)',
+        default: false
       });
   }, (argv) => {
     try {
-      generateDocs(argv.dir);
+      generateDocs(argv.dir, {
+        update: argv.update
+      });
     } catch (error) {
       console.error('Error generating documentation:', error.message);
       process.exit(1);
