@@ -182,23 +182,50 @@ describe('helper.js', () => {
 
   describe('generateJsDoc', () => {
     it('should generate JSDoc with given props (no spread)', () => {
-      const doc = generateJsDoc('MyComponent', 'props', ['foo', 'bar'], false);
-      expect(doc).toContain('@component MyComponent');
-      expect(doc).toContain('@param {Object} props Component props');
-      expect(doc).toContain('@param {*} props.foo - [auto generate]');
-      expect(doc).toContain('@param {*} props.bar - [auto generate]');
-      expect(doc).toContain('@returns {JSX.Element} React component');
+      const doc = generateJsDoc('MyComponent', ['foo', 'bar'], false, 'props');
+      
+      // First block: typedef declarations
+      expect(doc).toContain('@generated');
+      expect(doc).toContain('@typedef {any} AutoGen');
+      expect(doc).toContain('@typedef {{');
+      expect(doc).toContain('foo: AutoGen');
+      expect(doc).toContain('bar: AutoGen');
+      expect(doc).toContain('}} MyComponentProps');
+
+      // Second block: type declaration
+      expect(doc).toContain('@type {(props: MyComponentProps) => JSX.Element}');
     });
 
     it('should generate JSDoc with explicit spread prop', () => {
-      const doc = generateJsDoc('MyComponent', 'props', ['foo', '...rest'], false);
-      // When there is a prop starting with '...', it should use that name
-      expect(doc).toContain('@param {Object} props.rest - [auto generate]');
+      const doc = generateJsDoc('MyComponent', ['foo', '...rest'], false, 'props');
+      
+      // Check normal and spread props in typedef
+      expect(doc).toContain('foo: AutoGen');
+      expect(doc).toContain('rest?: AutoGen');
+      expect(doc).toContain('}} MyComponentProps');
     });
 
-    it('should generate JSDoc with fallback spread when hasSpreadProps is true and no spread prop provided', () => {
-      const doc = generateJsDoc('MyComponent', 'props', ['foo', 'bar'], true);
-      expect(doc).toContain('@param {Object} props.rest - [auto generate]');
+    it('should generate JSDoc with fallback spread when hasSpreadProps is true', () => {
+      const doc = generateJsDoc('MyComponent', ['foo', 'bar'], true, 'props');
+      
+      // Check normal props and [x: string] syntax for unknown spread
+      expect(doc).toContain('foo: AutoGen');
+      expect(doc).toContain('bar: AutoGen');
+      expect(doc).toContain('[x: string]: AutoGen');
+    });
+
+    it('should use custom param name in type declaration', () => {
+      const doc = generateJsDoc('MyComponent', ['foo'], false, 'data');
+      
+      // Check if the type declaration uses the custom param name
+      expect(doc).toContain('@type {(data: MyComponentProps) => JSX.Element}');
+    });
+
+    it('should use "props" as default param name if not provided', () => {
+      const doc = generateJsDoc('MyComponent', ['foo'], false);
+      
+      // Check if the type declaration uses the default "props"
+      expect(doc).toContain('@type {(props: MyComponentProps) => JSX.Element}');
     });
   });
 });
