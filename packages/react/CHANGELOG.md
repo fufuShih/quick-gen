@@ -1,5 +1,12 @@
 # @quick-gen/react
 
+## 0.4.0
+
+### Minor Changes
+
+- Change the jsdoc format with newer presentation.
+- Add the update option command to update the existing JSDoc.
+
 ## 0.3.4
 
 ### Patch Changes

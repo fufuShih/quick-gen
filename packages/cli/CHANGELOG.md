@@ -1,5 +1,12 @@
 # @quick-gen/cli
 
+## 0.1.16
+
+### Patch Changes
+
+- Updated dependencies
+  - @quick-gen/react@0.4.0
+
 ## 0.1.15
 
 ### Patch Changes
