@@ -179,9 +179,9 @@ function reactJsDocPlugin() {
   
         const jsDoc = generateJsDoc(
           componentInfo.name,
-          componentInfo.paramName,
           Array.from(componentInfo.props),
-          componentInfo.hasSpreadProps
+          componentInfo.hasSpreadProps,
+          componentInfo.paramName
         );
   
         if (typeof insertionNode.start === 'number') {
@@ -218,9 +218,9 @@ function reactJsDocPlugin() {
         analyzeComponent(path, componentInfo);
         const jsDoc = generateJsDoc(
           componentInfo.name,
-          componentInfo.paramName,
           Array.from(componentInfo.props),
-          componentInfo.hasSpreadProps
+          componentInfo.hasSpreadProps,
+          componentInfo.paramName
         );
 
         // Check if it's in an export declaration
@@ -283,9 +283,9 @@ function reactJsDocPlugin() {
         analyzeComponent(path, componentInfo);
         const jsDoc = generateJsDoc(
           componentInfo.name,
-          componentInfo.paramName,
           Array.from(componentInfo.props),
-          componentInfo.hasSpreadProps
+          componentInfo.hasSpreadProps,
+          componentInfo.paramName
         );
 
         if (typeof insertionNode.start === 'number') {
@@ -326,9 +326,9 @@ function reactJsDocPlugin() {
           analyzeComponent(path.get('declaration'), componentInfo);
           const jsDoc = generateJsDoc(
             componentInfo.name,
-            componentInfo.paramName,
             Array.from(componentInfo.props),
-            componentInfo.hasSpreadProps
+            componentInfo.hasSpreadProps,
+            componentInfo.paramName
           );
 
           // Use the start of ExportDefaultDeclaration

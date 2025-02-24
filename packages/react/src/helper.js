@@ -172,37 +172,53 @@ function isReactComponent(node) {
 
 /**
  * @param {string} componentName
- * @param {string} paramName
  * @param {string[]} props
  * @param {boolean} hasSpreadProps
+ * @param {string} [paramName='props']
  * @returns {string}
  */
-function generateJsDoc(componentName, paramName, props, hasSpreadProps) {
-  let doc = '';
-  doc += `/**\n`;
-  doc += ` * @generated ${Date.now()}\n`;
-  doc += ` * @component ${componentName.replace(/^_+/, '')}\n`;
-  doc += ` *\n`;
-  doc += ` * @param {Object} ${paramName} Component props\n`;
-  
-  const normalProps = props.filter(prop => !prop.startsWith('...'));
-  const spreadProps = props.find(prop => prop.startsWith('...'));
-  
-  normalProps.forEach(prop => {
-    doc += ` * @param {*} ${paramName}.${prop} - [auto generate]\n`;
+function generateJsDoc(componentName, props, hasSpreadProps, paramName = 'props') {
+  const name = componentName.replace(/^_+/, '');
+  const timestamp = Date.now();
+
+  // Analyze normal props vs spread props
+  const normalProps = [];
+  let restPropName = null;
+
+  props.forEach((p) => {
+    if (p.startsWith('...')) {
+      restPropName = p.slice(3);
+    } else {
+      normalProps.push(p);
+    }
   });
 
-  if (spreadProps) {
-    const restName = spreadProps.slice(3);
-    doc += ` * @param {Object} ${paramName}.${restName} - [auto generate]\n`;
+  // First block: typedef declarations
+  let docBlock1 = `/**\n`;
+  docBlock1 += ` * @generated ${timestamp}\n`;
+  docBlock1 += ` * @typedef {any} AutoGen\n`;
+  docBlock1 += ` *\n`;
+  docBlock1 += ` * @typedef {{\n`;
+
+  // Add normal props
+  normalProps.forEach((prop) => {
+    docBlock1 += ` *  ${prop}: AutoGen,\n`;
+  });
+
+  // Add rest props
+  if (restPropName) {
+    docBlock1 += ` *  ${restPropName}?: AutoGen,\n`;
   } else if (hasSpreadProps) {
-    doc += ` * @param {Object} ${paramName}.rest - [auto generate]\n`;
+    docBlock1 += ` *  [x: string]: AutoGen,\n`;
   }
 
-  doc += ` * @returns {JSX.Element} React component\n`;
-  doc += ` */`;
-  
-  return doc;
+  docBlock1 += ` * }} ${name}Props\n`;
+  docBlock1 += ` */`;
+
+  // Second block: component type declaration - use paramName here
+  let docBlock2 = `/** @type {(${paramName}: ${name}Props) => JSX.Element} */`;
+
+  return docBlock1 + `\n\n` + docBlock2;
 }
 
 module.exports = {
