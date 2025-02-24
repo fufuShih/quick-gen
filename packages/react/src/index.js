@@ -7,6 +7,7 @@ const {
   isReactComponent,
   generateJsDoc,
 } = require('./helper');
+const { parseJSDoc, updateParsedJSDoc, serializeJSDoc } = require('./jsdoc-parser');
 
 
 /**
@@ -93,7 +94,7 @@ function analyzeComponent(path, componentInfo) {
 /**
  * @type {import('@babel/core').PluginObj}
  */
-function reactJsDocPlugin() {
+function reactJsDocPlugin(options = {}) {
   return {
     pre(file) {
       this.insertionPoints = [];
@@ -265,14 +266,45 @@ function reactJsDocPlugin() {
           componentName = `AnonymousComponent_${Date.now()}`;
         }
 
-        // Check existing JSDoc
+        // Get existing comments
         const leadingComments = insertionNode.leadingComments || [];
-        if (leadingComments.some(comment =>
-          comment.type === 'CommentBlock' && comment.value.includes('@component')
-        )) {
-          return;
+        const existingJSDoc = leadingComments.find(
+          comment => comment.type === 'CommentBlock' && 
+                     (comment.value.includes('@component') || 
+                      comment.value.includes('@typedef'))
+        );
+
+        if (existingJSDoc) {
+          // If in update mode and has @generated, update the JSDoc
+          if (options.update && existingJSDoc.value.includes('@generated')) {
+            const parsedDoc = parseJSDoc(existingJSDoc.value);
+            if (parsedDoc) {
+              const componentInfo = {
+                name: componentName,
+                props: new Set(),
+                hasSpreadProps: false,
+                paramName: 'props'
+              };
+
+              analyzeComponent(path, componentInfo);
+              
+              updateParsedJSDoc(
+                parsedDoc, 
+                Array.from(componentInfo.props)
+              );
+
+              const updatedJSDoc = serializeJSDoc(parsedDoc);
+              
+              this.insertionPoints.push({
+                start: insertionNode.start,
+                text: updatedJSDoc + '\n'
+              });
+            }
+          }
+          return; // Skip if has JSDoc but not updating
         }
 
+        // Generate new JSDoc if none exists
         const componentInfo = {
           name: componentName,
           props: new Set(),
@@ -347,7 +379,7 @@ function reactJsDocPlugin() {
   };
 }
 
-async function generateDocs(directory) {
+async function generateDocs(directory, options = {}) {
   try {
     console.log('🔍 Scanning directory:', directory);
     const files = glob.sync('**/*.{js,jsx}', {
@@ -373,7 +405,7 @@ async function generateDocs(directory) {
       try {
         const result = await babel.transformAsync(code, {
           filename: file,
-          plugins: [reactJsDocPlugin()],
+          plugins: [[reactJsDocPlugin, options]],
           parserOpts: {
             plugins: ['jsx'],
             sourceType: 'module',
