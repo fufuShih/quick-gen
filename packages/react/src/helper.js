@@ -41,73 +41,73 @@ function containsJSX(node) {
  * @returns {boolean}
  */
 function hasReturnStatementWithJSX(statements, containsJSX, isWrappedComponent) {
-  for (const st of statements) {
+  for (const statement of statements) {
     if (
-      st.type === 'ReturnStatement' &&
-      st.argument &&
-      (containsJSX(st.argument) || isWrappedComponent(st.argument))
+      statement.type === 'ReturnStatement' &&
+      statement.argument &&
+      (containsJSX(statement.argument) || isWrappedComponent(statement.argument))
     ) {
       return true;
     }
 
-    if (st.type === 'IfStatement') {
+    if (statement.type === 'IfStatement') {
       if (
-        st.consequent &&
-        st.consequent.type === 'ReturnStatement' &&
-        st.consequent.argument &&
-        (containsJSX(st.consequent.argument) || isWrappedComponent(st.consequent.argument))
+        statement.consequent &&
+        statement.consequent.type === 'ReturnStatement' &&
+        statement.consequent.argument &&
+        (containsJSX(statement.consequent.argument) || isWrappedComponent(statement.consequent.argument))
       ) {
         return true;
       }
       
-      if (st.consequent && st.consequent.type === 'IfStatement') {
-        if (hasReturnStatementWithJSX([st.consequent], containsJSX, isWrappedComponent)) {
+      if (statement.consequent && statement.consequent.type === 'IfStatement') {
+        if (hasReturnStatementWithJSX([statement.consequent], containsJSX, isWrappedComponent)) {
           return true;
         }
       }
       
       if (
-        st.consequent?.type === 'BlockStatement' &&
-        hasReturnStatementWithJSX(st.consequent.body, containsJSX, isWrappedComponent)
+        statement.consequent?.type === 'BlockStatement' &&
+        hasReturnStatementWithJSX(statement.consequent.body, containsJSX, isWrappedComponent)
       ) {
         return true;
       }
       
-      if (st.alternate) {
+      if (statement.alternate) {
         if (
-          st.alternate.type === 'ReturnStatement' &&
-          st.alternate.argument &&
-          (containsJSX(st.alternate.argument) || isWrappedComponent(st.alternate.argument))
+          statement.alternate.type === 'ReturnStatement' &&
+          statement.alternate.argument &&
+          (containsJSX(statement.alternate.argument) || isWrappedComponent(statement.alternate.argument))
         ) {
           return true;
         }
         
-        if (st.alternate.type === 'IfStatement') {
-          if (hasReturnStatementWithJSX([st.alternate], containsJSX, isWrappedComponent)) {
+        if (statement.alternate.type === 'IfStatement') {
+          if (hasReturnStatementWithJSX([statement.alternate], containsJSX, isWrappedComponent)) {
             return true;
           }
         }
         
         if (
-          st.alternate.type === 'BlockStatement' &&
-          hasReturnStatementWithJSX(st.alternate.body, containsJSX, isWrappedComponent)
+          statement.alternate.type === 'BlockStatement' &&
+          hasReturnStatementWithJSX(statement.alternate.body, containsJSX, isWrappedComponent)
         ) {
           return true;
         }
       }
     }
 
-    if (st.type === 'ForStatement' || st.type === 'WhileStatement') {
+    if (statement.type === 'ForStatement' || statement.type === 'WhileStatement') {
       if (
-        st.body?.type === 'BlockStatement' &&
-        hasReturnStatementWithJSX(st.body.body, containsJSX, isWrappedComponent)
+        statement.body?.type === 'BlockStatement' &&
+        hasReturnStatementWithJSX(statement.body.body, containsJSX, isWrappedComponent)
       ) {
         return true;
       }
     }
 
-    if (st.type === 'SwitchStatement') {
-      for (const cs of st.cases) {
+    if (statement.type === 'SwitchStatement') {
+      for (const cs of statement.cases) {
         if (
           cs.consequent &&
           hasReturnStatementWithJSX(cs.consequent, containsJSX, isWrappedComponent)
