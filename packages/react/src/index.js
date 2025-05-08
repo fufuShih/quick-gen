@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 const glob = require('glob');
 const babel = require('@babel/core');
 const MagicString = require('magic-string');
