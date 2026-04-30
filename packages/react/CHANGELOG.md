@@ -1,5 +1,11 @@
 # @quick-gen/react
 
+## 1.0.0
+
+### Major Changes
+
+- upgrade the ts support
+
 ## 0.4.1
 
 ### Patch Changes

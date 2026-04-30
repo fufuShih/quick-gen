@@ -1,5 +1,16 @@
 # @quick-gen/cli
 
+## 1.0.0
+
+### Major Changes
+
+- upgrade the ts support
+
+### Patch Changes
+
+- Updated dependencies
+  - @quick-gen/react@1.0.0
+
 ## 0.1.16
 
 ### Patch Changes
