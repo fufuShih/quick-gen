@@ -221,7 +221,230 @@ function generateJsDoc(componentName, props, hasSpreadProps, paramName = 'props'
   return docBlock1 + `\n\n` + docBlock2;
 }
 
+/**
+ * @param {string} componentName
+ * @param {string} typeSuffix
+ * @returns {string}
+ */
+function getPropsTypeName(componentName, typeSuffix = 'Props') {
+  const cleanedName = String(componentName || 'Component')
+    .replace(/^_+/, '')
+    .replace(/[^\w$]/g, '');
+
+  const safeName = /^[A-Za-z_$]/.test(cleanedName)
+    ? cleanedName
+    : `_${cleanedName || 'Component'}`;
+
+  return `${safeName}${typeSuffix}`;
+}
+
+/**
+ * @param {string} name
+ * @returns {string}
+ */
+function formatTypePropertyName(name) {
+  if (/^[A-Za-z_$][\w$]*$/.test(name)) {
+    return name;
+  }
+
+  return JSON.stringify(name);
+}
+
+/**
+ * @param {string} type
+ * @returns {string}
+ */
+function jsDocTypeToTsType(type) {
+  const rawType = String(type || '*')
+    .trim()
+    .replace(/^!/, '')
+    .replace(/=$/, '');
+
+  if (!rawType || rawType === '*' || rawType === '?') {
+    return 'any';
+  }
+
+  const unionType = rawType.replace(/^\((.*)\)$/, '$1');
+  if (unionType.includes('|')) {
+    return unionType
+      .split('|')
+      .map(part => jsDocTypeToTsType(part))
+      .join(' | ');
+  }
+
+  const genericType = rawType.match(/^(Array|Object)\.?\<(.+)\>$/);
+  if (genericType && genericType[1] === 'Array') {
+    return `${jsDocTypeToTsType(genericType[2])}[]`;
+  }
+
+  if (genericType && genericType[1] === 'Object') {
+    const [keyType = 'string', valueType = 'any'] = genericType[2]
+      .split(',')
+      .map(part => part.trim());
+
+    return `Record<${jsDocTypeToTsType(keyType)}, ${jsDocTypeToTsType(valueType)}>`;
+  }
+
+  if (rawType.endsWith('[]')) {
+    return `${jsDocTypeToTsType(rawType.slice(0, -2))}[]`;
+  }
+
+  const knownTypes = {
+    '*': 'any',
+    object: 'Record<string, any>',
+    Object: 'Record<string, any>',
+    function: '(...args: any[]) => any',
+    Function: '(...args: any[]) => any',
+    boolean: 'boolean',
+    Boolean: 'boolean',
+    string: 'string',
+    String: 'string',
+    number: 'number',
+    Number: 'number',
+    bigint: 'bigint',
+    BigInt: 'bigint',
+    symbol: 'symbol',
+    Symbol: 'symbol',
+    undefined: 'undefined',
+    null: 'null',
+    void: 'void',
+    JSXElement: 'JSX.Element',
+    'JSX.Element': 'JSX.Element',
+    ReactNode: 'React.ReactNode',
+    'React.Node': 'React.ReactNode',
+    'React.ReactNode': 'React.ReactNode'
+  };
+
+  return knownTypes[rawType] || rawType;
+}
+
+/**
+ * @param {string|{name: string, type?: string, spread?: boolean}} prop
+ * @returns {{name: string, type: string, spread: boolean}}
+ */
+function normalizeTsProp(prop) {
+  if (typeof prop === 'string') {
+    return {
+      name: prop.replace(/^\.\.\./, ''),
+      type: 'any',
+      spread: prop.startsWith('...')
+    };
+  }
+
+  return {
+    name: prop.name.replace(/^\.\.\./, ''),
+    type: jsDocTypeToTsType(prop.type || '*'),
+    spread: !!prop.spread || prop.name.startsWith('...')
+  };
+}
+
+/**
+ * @param {string} componentName
+ * @param {Array<string|{name: string, type?: string, spread?: boolean}>} props
+ * @param {boolean} hasSpreadProps
+ * @param {{typeSuffix?: string, exportTypes?: boolean}} [options]
+ * @returns {string}
+ */
+function generateTsType(componentName, props, hasSpreadProps, options = {}) {
+  const typeName = getPropsTypeName(componentName, options.typeSuffix || 'Props');
+  const exportPrefix = options.exportTypes ? 'export ' : '';
+  const normalizedProps = props.map(normalizeTsProp);
+  const normalProps = normalizedProps.filter(prop => !prop.spread);
+  const needsIndexSignature = hasSpreadProps || normalizedProps.some(prop => prop.spread);
+  const seenProps = new Set();
+
+  let typeDefinition = `${exportPrefix}type ${typeName} = {\n`;
+
+  normalProps.forEach(prop => {
+    if (!prop.name || seenProps.has(prop.name)) return;
+    seenProps.add(prop.name);
+    typeDefinition += `  ${formatTypePropertyName(prop.name)}?: ${prop.type};\n`;
+  });
+
+  if (needsIndexSignature) {
+    typeDefinition += `  [key: string]: any;\n`;
+  }
+
+  typeDefinition += `};`;
+
+  return typeDefinition;
+}
+
+/**
+ * @param {string} target
+ * @returns {{target: string, optional: boolean}}
+ */
+function normalizeJsDocParamTarget(target) {
+  let normalized = String(target || '').trim();
+  let optional = false;
+
+  if (normalized.startsWith('[') && normalized.endsWith(']')) {
+    optional = true;
+    normalized = normalized.slice(1, -1);
+
+    const defaultValueIndex = normalized.indexOf('=');
+    if (defaultValueIndex !== -1) {
+      normalized = normalized.slice(0, defaultValueIndex);
+    }
+  }
+
+  return { target: normalized, optional };
+}
+
+/**
+ * @param {string} commentValue
+ * @returns {{name: string, paramName: string, props: Array<{name: string, type: string, spread?: boolean}>, hasSpreadProps: boolean}|null}
+ */
+function parseQuickGenJsDoc(commentValue) {
+  const componentMatch = String(commentValue || '').match(/@component\s+([A-Za-z_$][\w$]*)/);
+  if (!componentMatch) {
+    return null;
+  }
+
+  const componentInfo = {
+    name: componentMatch[1],
+    paramName: 'props',
+    props: [],
+    hasSpreadProps: false
+  };
+
+  const paramPattern = /@param\s+\{([^}]+)\}\s+([^\s]+)(?:\s+-?\s*(.*))?/g;
+  let match;
+
+  while ((match = paramPattern.exec(commentValue)) !== null) {
+    const jsDocType = match[1];
+    const { target } = normalizeJsDocParamTarget(match[2]);
+
+    if (!target.includes('.')) {
+      componentInfo.paramName = target || componentInfo.paramName;
+      continue;
+    }
+
+    const [paramName, ...propPathParts] = target.split('.');
+    const propName = propPathParts.join('.');
+    if (!propName) continue;
+
+    componentInfo.paramName = paramName || componentInfo.paramName;
+
+    if (propName.startsWith('...') || (propName === 'rest' && jsDocType.toLowerCase() === 'object')) {
+      componentInfo.hasSpreadProps = true;
+      continue;
+    }
+
+    componentInfo.props.push({
+      name: propName,
+      type: jsDocTypeToTsType(jsDocType)
+    });
+  }
+
+  return componentInfo;
+}
+
 module.exports = {
   isReactComponent,
-  generateJsDoc
+  generateJsDoc,
+  generateTsType,
+  getPropsTypeName,
+  parseQuickGenJsDoc,
+  jsDocTypeToTsType
 };

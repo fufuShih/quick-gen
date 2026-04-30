@@ -55,6 +55,12 @@ npx quick-gen react -d src/components
 # Generate docs for components
 quick-gen react -d src/components
 
+# Generate TypeScript props types
+quick-gen react -d src/components --extensions ts,tsx --output type
+
+# Convert existing quick-gen JSDoc to TypeScript props types
+quick-gen react -d src/components --extensions ts,tsx --convert-jsdoc-to-type
+
 # Show help
 quick-gen --help
 ```
@@ -63,19 +69,25 @@ quick-gen --help
 
 | Command | Description |
 |---------|-------------|
-| `react -d [dir]` | Generate JSDoc for React components |
+| `react -d [dir]` | Generate JSDoc or TypeScript props types for React components |
 
 #### React Command Options
 
 | Option | Alias | Description | Default |
 |--------|-------|-------------|---------|
 | `--dir` | `-d` | Directory to scan for React components | `src` |
+| `--extensions` | `-e` | Comma-separated file extensions to scan | `js,jsx,ts,tsx` |
+| `--output` | `-o` | Output mode: `jsdoc`, `type`, or `both` | `jsdoc` |
+| `--convert-jsdoc-to-type` | | Convert quick-gen JSDoc blocks into TypeScript props types | `false` |
+| `--keep-jsdoc` | | Keep existing JSDoc when converting to TypeScript types | `false` |
+| `--type-suffix` | | Suffix for generated props type names | `Props` |
+| `--export-types` | | Add `export` to generated TypeScript types | `false` |
 | `--help` | `-h` | Show help | |
 
 ## 🛠️ Requirements
 
 - Node.js >= 14
-- React project with `.js` or `.jsx` files
+- React project with `.js`, `.jsx`, `.ts`, or `.tsx` files
 
 ## 📦 Related Packages
 

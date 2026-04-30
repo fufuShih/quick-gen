@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const { generateDocs } = require('../index');
 
 describe('generateDocs', () => {
@@ -104,6 +105,11 @@ describe('generateDocs', () => {
       file: 'ComponentDefaultFunction.jsx',
       description: 'Component with default function'
     },
+    {
+      name: 'typescript component',
+      file: 'TypeScriptButton.tsx',
+      description: 'Component in a TSX file'
+    },
   ];
 
   testCases.forEach(({ name, file, description }) => {
@@ -146,5 +152,74 @@ describe('generateDocs', () => {
     const normalizedExpected = expected.replace(/\r\n/g, '\n');
     
     expect(normalizedActual).toBe(normalizedExpected);
+  });
+
+  it('should generate TypeScript props types when output is type', async () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quick-gen-type-'));
+    const file = path.join(tempDir, 'TypeOutputButton.tsx');
+
+    fs.writeFileSync(file, `const TypeOutputButton = ({ label, disabled, ...rest }) => {
+  return (
+    <button disabled={disabled} {...rest}>
+      {label}
+    </button>
+  );
+};
+`, 'utf-8');
+
+    await generateDocs(tempDir, {
+      extensions: ['tsx'],
+      output: 'type'
+    });
+
+    const actual = fs.readFileSync(file, 'utf-8');
+
+    expect(actual).toContain(`type TypeOutputButtonProps = {
+  label?: any;
+  disabled?: any;
+  [key: string]: any;
+};
+
+const TypeOutputButton`);
+  });
+
+  it('should convert quick-gen JSDoc into TypeScript props types', async () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quick-gen-convert-'));
+    const file = path.join(tempDir, 'ExistingDocButton.tsx');
+
+    fs.writeFileSync(file, `/**
+ * @generated 1700000000000
+ * @component ExistingDocButton
+ *
+ * @param {Object} props Component props
+ * @param {string} props.label - Label
+ * @param {boolean} props.disabled - Disabled
+ * @param {Object} props.rest - [auto generate]
+ * @returns {JSX.Element} React component
+ */
+const ExistingDocButton = ({ label, disabled, ...rest }) => {
+  return (
+    <button disabled={disabled} {...rest}>
+      {label}
+    </button>
+  );
+};
+`, 'utf-8');
+
+    await generateDocs(tempDir, {
+      extensions: ['tsx'],
+      convertJsDocToType: true
+    });
+
+    const actual = fs.readFileSync(file, 'utf-8');
+
+    expect(actual).not.toContain('@component ExistingDocButton');
+    expect(actual).toContain(`type ExistingDocButtonProps = {
+  label?: string;
+  disabled?: boolean;
+  [key: string]: any;
+};
+
+const ExistingDocButton`);
   });
 }); 

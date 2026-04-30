@@ -1,4 +1,10 @@
-const { isReactComponent, generateJsDoc } = require('../helper');
+const {
+  isReactComponent,
+  generateJsDoc,
+  generateTsType,
+  parseQuickGenJsDoc,
+  jsDocTypeToTsType
+} = require('../helper');
 
 describe('helper.js', () => {
   describe('isReactComponent', () => {
@@ -226,6 +232,52 @@ describe('helper.js', () => {
       
       // Check if the type declaration uses the default "props"
       expect(doc).toContain('@type {(props: MyComponentProps) => JSX.Element}');
+    });
+  });
+
+  describe('generateTsType', () => {
+    it('should generate a props type from analyzed props', () => {
+      const typeDefinition = generateTsType('MyComponent', ['foo', 'bar'], false);
+
+      expect(typeDefinition).toContain('type MyComponentProps = {');
+      expect(typeDefinition).toContain('foo?: any;');
+      expect(typeDefinition).toContain('bar?: any;');
+    });
+
+    it('should generate an index signature for spread props', () => {
+      const typeDefinition = generateTsType('MyComponent', ['foo', '...rest'], false);
+
+      expect(typeDefinition).toContain('foo?: any;');
+      expect(typeDefinition).toContain('[key: string]: any;');
+    });
+  });
+
+  describe('parseQuickGenJsDoc', () => {
+    it('should parse quick-gen JSDoc into component info', () => {
+      const info = parseQuickGenJsDoc(`
+       * @component Button
+       *
+       * @param {Object} props Component props
+       * @param {string} props.label - Label
+       * @param {boolean} props.disabled - Disabled
+       * @returns {JSX.Element} React component
+       `);
+
+      expect(info.name).toBe('Button');
+      expect(info.paramName).toBe('props');
+      expect(info.props).toEqual([
+        { name: 'label', type: 'string' },
+        { name: 'disabled', type: 'boolean' }
+      ]);
+    });
+  });
+
+  describe('jsDocTypeToTsType', () => {
+    it('should map common JSDoc types to TypeScript types', () => {
+      expect(jsDocTypeToTsType('*')).toBe('any');
+      expect(jsDocTypeToTsType('Object')).toBe('Record<string, any>');
+      expect(jsDocTypeToTsType('string|number')).toBe('string | number');
+      expect(jsDocTypeToTsType('Array.<string>')).toBe('string[]');
     });
   });
 });

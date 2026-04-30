@@ -8,6 +8,7 @@ A collection of quick and flexible code generation tools for modern web developm
 ## 🚀 Features
 
 - 📝 **React Documentation Generation**: Automatically generate JSDoc for React components
+- 🧩 **React Type Generation**: Generate TypeScript props types from scanned props or quick-gen JSDoc
 - 🔍 **Intelligent Detection**: Smart component and props analysis
 - 🛠️ **Flexible Toolkit**: Extensible architecture for various generation needs
 - 💪 **Developer Friendly**: Easy to use CLI with comprehensive options
@@ -46,6 +47,12 @@ pnpm add -D @quick-gen/react
 # Generate JSDoc for React components
 quick-gen react -d src/components
 
+# Generate TypeScript props types for TS/TSX React components
+quick-gen react -d src/components --extensions ts,tsx --output type
+
+# Convert existing quick-gen JSDoc to TypeScript props types
+quick-gen react -d src/components --extensions ts,tsx --convert-jsdoc-to-type
+
 # Show help
 quick-gen --help
 ```
@@ -56,6 +63,11 @@ quick-gen --help
 const { generateDocs } = require('@quick-gen/react');
 
 generateDocs('src/components');
+
+generateDocs('src/components', {
+  extensions: ['ts', 'tsx'],
+  output: 'type'
+});
 ```
 
 ## 🛠️ Development

@@ -23,6 +23,10 @@ A powerful tool that automatically generates comprehensive JSDoc documentation f
   - Memo wrapped components (`memo(Button)`)
   - ForwardRef components (`forwardRef((props, ref) => {})`)
   - Multiple components in a single file
+- 🧩 **TypeScript Support**:
+  - Scans `.js`, `.jsx`, `.ts`, and `.tsx` files by default
+  - Can generate `type ComponentProps = { ... }`
+  - Can convert quick-gen `@component` JSDoc blocks into TypeScript props types
 - 🚀 **Non-Intrusive**: 
   - Preserves existing JSDoc comments
   - Only adds documentation where needed
@@ -53,6 +57,15 @@ npx quick-gen-react
 # Specify custom directory
 npx quick-gen-react -d src/components
 
+# Update existing generated JSDoc
+npx quick-gen-react -d src/components --update
+
+# Generate TypeScript props types
+npx quick-gen-react -d src/components --extensions ts,tsx --output type
+
+# Convert existing quick-gen JSDoc to TypeScript props types
+npx quick-gen-react -d src/components --extensions ts,tsx --convert-jsdoc-to-type
+
 # Get help
 npx quick-gen-react --help
 ```
@@ -72,11 +85,17 @@ Add a script to your package.json:
 
 ### CLI Options
 
-| Option   | Alias | Description                            | Default |
-| -------- | ----- | -------------------------------------- | ------- |
-| `--dir`  | `-d`  | Directory to scan for React components | `"src"` |
-| `--update` | `-u`  | Update existing @generated JSDoc (only modifies AutoGen props)   | `false` |
-| `--help` | `-h`  | Show help                              | -       |
+| Option | Alias | Description | Default |
+| ------ | ----- | ----------- | ------- |
+| `--dir` | `-d` | Directory to scan for React components | `"src"` |
+| `--update` | `-u` | Update existing `@generated` JSDoc (only modifies `AutoGen` props) | `false` |
+| `--extensions` | `-e` | Comma-separated file extensions to scan | `"js,jsx,ts,tsx"` |
+| `--output` | `-o` | Output mode: `jsdoc`, `type`, or `both` | `"jsdoc"` |
+| `--convert-jsdoc-to-type` | | Convert quick-gen JSDoc blocks into TypeScript props types | `false` |
+| `--keep-jsdoc` | | Keep existing JSDoc when converting to TypeScript types | `false` |
+| `--type-suffix` | | Suffix for generated props type names | `"Props"` |
+| `--export-types` | | Add `export` to generated TypeScript types | `false` |
+| `--help` | `-h` | Show help | - |
 
 ## 📝 Examples
 
@@ -115,7 +134,7 @@ const Button = ({ onClick, children, disabled }) => {
 ## 🛠️ Requirements
 
 - Node.js >= 14
-- React project with `.js` or `.jsx` files
+- React project with `.js`, `.jsx`, `.ts`, or `.tsx` files
 
 ## 📦 Related Packages
 
